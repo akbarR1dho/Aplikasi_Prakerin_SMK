@@ -74,9 +74,3 @@ Jalankan perintah seeder untuk generate data awal yang diperlukan
 ```bash
 php artisan db:seed
 ```
-
-### 8. Generate JWT Secret Key
-
-```bash
-php artisan jwt:secret
-```
