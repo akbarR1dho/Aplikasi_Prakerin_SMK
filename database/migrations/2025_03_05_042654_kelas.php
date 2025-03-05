@@ -13,14 +13,13 @@ return new class extends Migration
     public function up(): void
     {
         //
-        Schema::create('hubin', function (Blueprint $table) {
+        Schema::create('kelas', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('nip', 20)->unique()->nullable(true);
-            $table->string('email', 150)->unique()->nullable(false);
-            $table->string('nama', 100);
-            $table->string('no_telp', 20);
-            $table->enum('jenis_kelamin', ['L', 'P']);
-            $table->foreignUuid('id_akun')->constrained('akun')->onDelete('cascade');
+            $table->string('angkatan', 5);
+            $table->enum('tingkat', ['10', '11', '12']);
+            $table->enum('kelompok', ['A', 'B', 'C']);
+            $table->foreignUuid('id_jurusan')->constrained('jurusan')->onDelete('cascade');
+            $table->foreignUuid('walas')->constrained('guru')->nullOnDelete()->nullable(true);
             $table->timestamps();
         });
     }
@@ -31,6 +30,6 @@ return new class extends Migration
     public function down(): void
     {
         //
-        Schema::dropIfExists('hubin');
+        Schema::dropIfExists('kelas');
     }
 };

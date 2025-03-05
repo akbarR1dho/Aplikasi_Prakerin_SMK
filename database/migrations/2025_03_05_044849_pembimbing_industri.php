@@ -13,9 +13,8 @@ return new class extends Migration
     public function up(): void
     {
         //
-        Schema::create('hubin', function (Blueprint $table) {
+        Schema::create('pembimbing_industri', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('nip', 20)->unique()->nullable(true);
             $table->string('email', 150)->unique()->nullable(false);
             $table->string('nama', 100);
             $table->string('no_telp', 20);
@@ -31,6 +30,6 @@ return new class extends Migration
     public function down(): void
     {
         //
-        Schema::dropIfExists('hubin');
+        Schema::dropIfExists('pembimbing_industri');
     }
 };

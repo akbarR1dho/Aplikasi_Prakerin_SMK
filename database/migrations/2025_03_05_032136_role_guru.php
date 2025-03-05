@@ -13,14 +13,10 @@ return new class extends Migration
     public function up(): void
     {
         //
-        Schema::create('hubin', function (Blueprint $table) {
+        Schema::create('role_guru', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('nip', 20)->unique()->nullable(true);
-            $table->string('email', 150)->unique()->nullable(false);
-            $table->string('nama', 100);
-            $table->string('no_telp', 20);
-            $table->enum('jenis_kelamin', ['L', 'P']);
-            $table->foreignUuid('id_akun')->constrained('akun')->onDelete('cascade');
+            $table->foreignUuid('id_role')->constrained('roles')->onDelete('cascade');
+            $table->foreignUuid('id_guru')->constrained('guru')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -31,6 +27,6 @@ return new class extends Migration
     public function down(): void
     {
         //
-        Schema::dropIfExists('hubin');
+        Schema::dropIfExists('role_guru');
     }
 };

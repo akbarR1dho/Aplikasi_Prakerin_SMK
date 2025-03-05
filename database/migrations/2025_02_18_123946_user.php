@@ -12,15 +12,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Aktifkan extension uuid-ossp khusus PostgreSQL
-        DB::statement('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
-
         // create tabel user
         Schema::create('akun', function (Blueprint $table) {
-            $table->uuid('id')->default(DB::raw('uuid_generate_v4()'))->primary();
-            $table->string('username', 20)->unique()->nullable(false);
-            $table->string('email', 100)->unique()->nullable(false);
-            $table->text('password')->nullable(false);
+            $table->uuid('id')->primary();
+            $table->string('username', 100)->unique()->nullable(false);
+            $table->string('password', 255)->nullable(false);
+            $table->enum('role', ['siswa', 'hubin', 'guru']);
+            $table->timestamps();
         });
     }
 
