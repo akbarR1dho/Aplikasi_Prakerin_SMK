@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\GuruModel;
+use App\Models\HubinModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -20,11 +22,11 @@ class AuthController extends Controller
             return redirect('/login')->withErrors($validator)->withInput();
         }
 
-        if (auth()->attempt(request()->only('username', 'password'))) {
-            return redirect()->route('dashboard-hubin')->with('success', 'Login berhasil');
+        if (auth()->attempt(request()->only('username', 'password'))) {         
+            return redirect()->route('home')->with('success', 'Login berhasil');
         }
 
-        return redirect()->back()->with('error', 'Invalid credentials');
+        return redirect()->route('login')->with('error', 'Username atau password salah');
     }
 
     public function logout(Request $request)

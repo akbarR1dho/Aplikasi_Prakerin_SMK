@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Login Form Aplikasi Prakerin</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -40,7 +40,7 @@
                                 </div>
                                 @endif
                             </div>
-                            
+
                             <form action="{{ route('login-post') }}" method="POST">
                                 @csrf
                                 <div class="row gy-3 overflow-hidden">

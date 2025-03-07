@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\GuruModel;
 use App\Models\HubinModel;
+use App\Models\SiswaModel;
 
 class CheckRole
 {
@@ -52,12 +53,12 @@ class CheckRole
                 }
                 break;
 
-            // case 'siswa':
-            //     // Cek apakah user ada di tabel siswa
-            //     if (!Siswa::where('user_id', $user->id)->exists()) {
-            //         return redirect('/')->with('error', 'Anda tidak memiliki akses sebagai Siswa.');
-            //     }
-            //     break;
+            case 'siswa':
+                // Cek apakah user ada di tabel siswa
+                if (!SiswaModel::where('id_akun', $user->id)->exists()) {
+                    return redirect('/')->with('error', 'Anda tidak memiliki akses sebagai Siswa.');
+                }
+                break;
 
             default:
                 return redirect('/login')->with('error', 'Role tidak valid.');
