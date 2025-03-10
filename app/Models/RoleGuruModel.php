@@ -4,8 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class RoleGuruModel extends Model
+class RoleGuruModel extends Pivot
 {
     //
     use HasUuids;
@@ -16,14 +17,4 @@ class RoleGuruModel extends Model
         'id_role',
         'id_guru',
     ];
-
-    public function role()
-    {
-        return $this->belongsTo(RolesModel::class, 'id_role');
-    }
-
-    public function guru()
-    {
-        return $this->belongsTo(GuruModel::class, 'id_guru');
-    }
 }

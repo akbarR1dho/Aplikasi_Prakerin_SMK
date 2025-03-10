@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('bukti', 200);
             $table->string('id_siswa', 30);
             $table->foreign('id_siswa')->references('nis')->on('siswa')->onDelete('cascade');
-            $table->foreignUuid('id_pengajuan')->constrained('pengajuan')->nullOnDelete();
+            $table->foreignUuid('id_pengajuan')->unique()->constrained('pengajuan')->nullOnDelete();
             $table->foreignUuid('pembimbing_sekolah')->constrained('guru')->nullOnDelete();
             $table->foreignUuid('pembimbing_industri')->constrained('pembimbing_industri')->nullOnDelete();
             $table->timestamps();

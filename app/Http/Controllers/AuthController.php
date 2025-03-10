@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\GuruModel;
-use App\Models\HubinModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;

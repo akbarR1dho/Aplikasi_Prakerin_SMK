@@ -24,8 +24,8 @@ return new class extends Migration
             $table->date('tanggal_lahir');
             $table->string('tahun_masuk', 5);
             $table->enum('jenis_kelamin', ['P', 'L']);
-            $table->foreignUuid('id_akun')->constrained('akun')->onDelete('cascade');
-            $table->foreignUuid('id_kelas')->constrained('kelas')->onDelete('cascade');
+            $table->foreignUuid('id_akun')->unique()->nuconstrained('akun')->onDelete('cascade');
+            $table->foreignUuid('id_kelas')->nullable(true)->constrained('kelas')->nullOnDelete();
             $table->timestamps();
         });
     }

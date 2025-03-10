@@ -5,16 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-class HubinModel extends Model
+class PembimbingIndustriModel extends Model
 {
     use HasUuids;
 
-    protected $table = 'hubin';
+    protected $table = 'pembimbing_industri';
 
     protected $fillable = [
-        'nip',
-        'nama',
         'email',
+        'nama',
         'no_telp',
         'jenis_kelamin',
         'id_akun',
@@ -22,6 +21,6 @@ class HubinModel extends Model
 
     public function akun()
     {
-        return $this->hasOne(User::class, 'id', 'id_akun');
+        return $this->hasOne(User::class, 'id_akun');
     }
 }

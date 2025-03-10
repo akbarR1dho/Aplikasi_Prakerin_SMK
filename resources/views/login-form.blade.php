@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Form Aplikasi Prakerin</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset($settings['app_icon']) }}" />
+    <title>Login {{ $settings['app_name'] }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -16,30 +17,12 @@
                     <div class="card border border-light-subtle rounded-4">
                         <div class="card-body p-3 p-md-4 p-xl-5">
                             <div class="text-center mb-3">
-                                <img src="{{ asset('storage/images/logo_smkn1.png') }}" alt="Logo" width="100" height="95">
+                                <img src="{{ asset($settings['app_icon']) }}" alt="Logo" width="100" height="95">
                             </div>
-                            <p class="text-center mb-4">Aplikasi Prakerin</p>
+                            <p class="text-center mb-4">Silahkan Masuk</p>
 
                             <!-- Alert Message -->
-                            <div>
-                                @if(session('success'))
-                                <div class="alert alert-success">{{ session('success') }}</div>
-                                @endif
-
-                                @if(session('error'))
-                                <div class="alert alert-danger">{{ session('error') }}</div>
-                                @endif
-
-                                @if ($errors->any())
-                                <div class="alert alert-danger">
-                                    <ul class="mb-0">
-                                        @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                                @endif
-                            </div>
+                            <x-flash-message />
 
                             <form action="{{ route('login-post') }}" method="POST">
                                 @csrf

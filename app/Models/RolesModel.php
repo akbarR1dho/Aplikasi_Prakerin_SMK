@@ -11,13 +11,14 @@ class RolesModel extends Model
     use HasUuids;
 
     protected $table = 'roles';
+    public $timestamps = false;
 
     protected $fillable = [
         'nama',
     ];
 
-    public function role_guru()
+    public function gurus()
     {
-        return $this->hasMany(RoleGuruModel::class);
+        return $this->belongsToMany(GuruModel::class, 'role_guru', 'id_role', 'id_guru')->using(RoleGuruModel::class);
     }
 }

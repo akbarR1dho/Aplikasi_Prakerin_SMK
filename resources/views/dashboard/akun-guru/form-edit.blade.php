@@ -3,14 +3,15 @@
 @section('content')
 <div class="card">
     <div class="card-header">
-        <h3>Tambah Guru</h3>
+        <h3>Edit Guru</h3>
 
         <x-flash-message />
     </div>
 
     <div class="card-body">
-        <form action="{{ route('akun-guru.tambah') }}" method="POST">
+        <form action="{{ route('akun-guru.edit', $guru->id) }}" method="POST">
             @csrf
+            @method('PUT')
             <div class="mb-3">
                 <label class="form-label" for="basic-icon-default-fullname">NIP</label>
                 <div class="input-group input-group-merge">
@@ -20,7 +21,7 @@
                         class="form-control"
                         id="nip"
                         placeholder="Masukkan NIP"
-                        name="nip" value="{{ old('nip') }}" />
+                        name="nip" value="{{ $guru->nip }}" />
                 </div>
             </div>
             <div class="mb-3">
@@ -32,7 +33,7 @@
                         class="form-control"
                         id="nama"
                         placeholder="Masukkan Nama"
-                        name="nama" value="{{ old('nama') }}" />
+                        name="nama" required value="{{ $guru->nama }}" />
                 </div>
             </div>
             <div class="mb-3">
@@ -44,7 +45,7 @@
                         class="form-control"
                         id="email"
                         placeholder="Masukkan Email"
-                        name="email" value="{{ old('email') }}" />
+                        name="email" required value="{{ $guru->email }}" />
 
                 </div>
             </div>
@@ -57,7 +58,7 @@
                         class="form-control"
                         id="no_telp"
                         placeholder="Masukkan No. Telp"
-                        name="no_telp" value="{{ old('no_telp') }}" />
+                        name="no_telp" required value="{{ $guru->no_telp }}" />
 
                 </div>
             </div>
@@ -65,10 +66,10 @@
                 <label class="form-label" for="basic-icon-default-fullname">Jenis Kelamin</label>
                 <div class="input-group input-group-merge">
                     <span class="input-group-text"><i class='bx bx-body'></i></span>
-                    <select name="jenis_kelamin" id="jenis_kelamin" class="form-select">
-                        <option selected disabled value>Pilih...</option>
-                        <option value="L">Laki-laki</option>
-                        <option value="P">Perempuan</option>
+                    <select name="jenis_kelamin" id="jenis_kelamin" class="form-select" required>
+                        <option selected disabled {{ empty($guru->jenis_kelamin) ? 'selected' : '' }}>Pilih...</option>
+                        <option value="L" {{ $guru->jenis_kelamin == 'L' ? 'selected' : '' }}>Laki-laki</option>
+                        <option value="P" {{ $guru->jenis_kelamin == 'P' ? 'selected' : '' }}>Perempuan</option>
                     </select>
                 </div>
             </div>

@@ -50,11 +50,11 @@ class User extends Authenticatable
 
     public function hubin()
     {
-        return $this->hasOne(HubinModel::class);
+        return $this->belongsTo(HubinModel::class, 'id_akun', 'id');
     }
 
     public function guru()
     {
-        return $this->hasOne(GuruModel::class);
+        return $this->belongsTo(GuruModel::class, 'id_akun', 'id');
     }
 }

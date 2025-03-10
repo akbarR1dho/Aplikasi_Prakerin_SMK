@@ -12,12 +12,12 @@
         name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>Aplikasi Prakerin</title>
+    <title>Dashboard {{ $settings['app_name'] }}</title>
 
     <meta name="description" content="" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('dashboard/img/favicon/favicon.ico') }}" />
+    <link rel="icon" type="image/x-icon" href="{{ asset($settings['app_icon']) }}" />
 
     <!-- Icons. Uncomment required icon fonts -->
     <link rel="stylesheet" href="{{ asset('dashboard/vendor/fonts/boxicons.css') }}" />
@@ -50,11 +50,11 @@
 
             <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
                 <div class="app-brand demo">
-                    <a href="index.html" class="app-brand-link">
+                    <a href="{{ route('home') }}" class="app-brand-link">
                         <span class="app-brand-logo demo me-2">
-                            <img src="{{ asset('storage/images/logo_smkn1.png') }}" alt="Logo" width="35" height="35">
+                            <img src="{{ asset($settings['app_icon']) }}" alt="Logo" width="35" height="35">
                         </span>
-                        <span class="menu-text fw-bolder m-0 h5">Aplikasi Prakerin</span>
+                        <span class="menu-text fw-bolder m-0 h5">{{ $settings['app_name'] }}</span>
                     </a>
 
                     <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
@@ -139,31 +139,27 @@
                             </li>
                         </ul>
                     </li>
-                    @endif
 
                     <li class="menu-item">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
-                            <i class="menu-icon tf-icons bx bx-lock-open-alt"></i>
-                            <div data-i18n="Authentications">Authentications</div>
+                            <i class="menu-icon tf-icons bx bx-chalkboard"></i>
+                            <div data-i18n="Authentications">Daftar Kelas</div>
                         </a>
                         <ul class="menu-sub">
                             <li class="menu-item">
                                 <a href="auth-login-basic.html" class="menu-link" target="_blank">
-                                    <div data-i18n="Basic">Login</div>
+                                    <div data-i18n="Basic">Kelas</div>
                                 </a>
                             </li>
                             <li class="menu-item">
-                                <a href="auth-register-basic.html" class="menu-link" target="_blank">
-                                    <div data-i18n="Basic">Register</div>
-                                </a>
-                            </li>
-                            <li class="menu-item">
-                                <a href="auth-forgot-password-basic.html" class="menu-link" target="_blank">
-                                    <div data-i18n="Basic">Forgot Password</div>
+                                <a href="{{ route('jurusan.index') }}" class="menu-link">
+                                    <div data-i18n="Basic">Jurusan</div>
                                 </a>
                             </li>
                         </ul>
                     </li>
+                    @endif
+
                     <li class="menu-item">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons bx bx-cube-alt"></i>
@@ -397,64 +393,7 @@
             <div class="layout-page">
                 <!-- Navbar -->
 
-                <nav
-                    class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
-                    id="layout-navbar">
-                    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
-                        <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
-                            <i class="bx bx-menu bx-sm"></i>
-                        </a>
-                    </div>
-
-                    <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-                        <ul class="navbar-nav flex-row align-items-center ms-auto">
-                            <!-- User -->
-                            <li class="nav-item navbar-dropdown dropdown-user dropdown">
-                                <a class="nav-link dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                    <div class="avatar avatar-online">
-                                        <img src="{{ asset('dashboard/img/avatars/1.png') }}" alt class="w-px-40 h-auto rounded-circle" />
-                                    </div>
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li>
-                                        <a class="dropdown-item" href="#">
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 me-3">
-                                                    <div class="avatar avatar-online">
-                                                        <img src="{{ asset('dashboard/img/avatars/1.png') }}" alt class="w-px-40 h-auto rounded-circle" />
-                                                    </div>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <span class="fw-semibold d-block">{{ $nama }}</span>
-                                                    <small class="text-muted">{{ $user->role }}</small>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <div class="dropdown-divider"></div>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="#">
-                                            <i class="bx bx-user me-2"></i>
-                                            <span class="align-middle">My Profile</span>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <div class="dropdown-divider"></div>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item cursor-pointer" id="logoutButton">
-                                            <i class="bx bx-power-off me-2"></i>
-                                            <span class="align-middle">Log Out</span>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <!--/ User -->
-                        </ul>
-                    </div>
-                </nav>
+                @include('layouts.navbar')
 
                 <!-- / Navbar -->
 
@@ -493,7 +432,7 @@
     <!-- Page JS -->
     <script src="{{ asset('dashboard/js/dashboards-analytics.js') }}"></script>
 
-    @yield('script')
+    @yield('script')`
 
     <script>
         document.getElementById("logoutButton").addEventListener("click", function() {

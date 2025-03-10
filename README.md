@@ -74,3 +74,11 @@ Jalankan perintah seeder untuk generate data awal yang diperlukan
 ```bash
 php artisan db:seed
 ```
+
+### 8. Jalankan Storage Link
+
+Jalankan storage link agar file yang diunggah dapat digunakan secara public
+
+```bash
+php artisan storage:link
+```

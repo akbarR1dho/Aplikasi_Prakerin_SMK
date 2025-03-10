@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('nama', 100);
             $table->string('no_telp', 20);
             $table->enum('jenis_kelamin', ['L', 'P']);
-            $table->foreignUuid('id_akun')->constrained('akun')->onDelete('cascade');
+            $table->foreignUuid('id_akun')->unique()->constrained('akun')->onDelete('cascade');
             $table->timestamps();
         });
     }

@@ -17,7 +17,6 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('id_role')->constrained('roles')->onDelete('cascade');
             $table->foreignUuid('id_guru')->constrained('guru')->onDelete('cascade');
-            $table->timestamps();
         });
     }
 

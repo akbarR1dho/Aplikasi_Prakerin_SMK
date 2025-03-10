@@ -2,12 +2,8 @@
 
 @section('content')
 <div>
-    @if (session()->has('success'))
-        <div class="alert alert-success">
-            {{ session()->get('success') }}
-        </div>
-    @endif
-    
+    <x-flash-message />
+
     <div class="col-lg-8 mb-4 order-0">
         <div class="card">
             <div class="d-flex align-items-end row">

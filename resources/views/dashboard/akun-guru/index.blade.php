@@ -8,25 +8,22 @@
 <div class="card">
     <div class="card-header d-grid gap-3">
         <div class="d-flex justify-content-between align-items-center">
-            <h3>Daftar Guru</h3>
-            <a href="{{ route('akun-guru.tambah') }}" class="btn btn-primary">Tambah Guru</a>
+            <h3 class="m-0">Daftar Guru</h3>
+            <a href="{{ route('akun-guru.tambah') }}" class="btn btn-primary">Tambah</a>
         </div>
-        @if (session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-        @endif
+
+        <x-flash-message />
     </div>
 
 
     <div class="card-body">
-        <table class="table table-bordered data-table" id="data-guru">
+        <table class="table table-bordered" id="data-guru">
             <thead>
                 <tr>
-                    <th>NIP</th>
                     <th>Nama</th>
+                    <th class="text-start">NIP</th>
                     <th>Email</th>
-                    <th width="100px">Action</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -34,6 +31,9 @@
         </table>
     </div>
 </div>
+
+@include('dashboard.akun-guru.modal-ganti-password')
+
 @endsection
 
 @section('script')
@@ -41,16 +41,19 @@
     $(document).ready(function() {
 
         $('#data-guru').DataTable({
+            responsive: true,
             processing: true,
             serverSide: true,
             ajax: "{{ route('akun-guru.index') }}",
             columns: [{
-                    data: 'nip',
-                    name: 'nip'
-                },
-                {
                     data: 'nama',
                     name: 'nama'
+                },
+                {
+                    data: 'nip',
+                    name: 'nip',
+                    class: 'text-start',
+                    defaultContent: '-'
                 },
                 {
                     data: 'email',
@@ -79,6 +82,32 @@
                     })
             }
         });
+
+        $(document).on('click', '.btnGantiPassword', function() {
+            let id = $(this).data('id');
+            $('#modalForm').modal('show');
+            $('#id').val(id);
+        });
+
+        $('#modalForm').on('hidden.bs.modal', function() {
+            $('#form')[0].reset();
+        });
+
+        $('#form').submit(function(e) {
+            e.preventDefault();
+            const formData = $(this).serialize();
+
+            axios.post('{{ route("akun-guru.ganti-password") }}', formData)
+                .then(response => {
+                    alert(response.data.message);
+                    $('#modalForm').modal('hide');
+                    $('#data-guru').DataTable().ajax.reload();
+                })
+                .catch(error => {
+                    alert(error.response.data.message);
+                    console.error('Gagal menambahkan jurusan:', error);
+                })
+        })
 
     });
 </script>

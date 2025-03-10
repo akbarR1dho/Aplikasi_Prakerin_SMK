@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class SiswaModel extends Model
 {
     //
-    protected $table = 'guru';
+    protected $table = 'siswa';
 
     // Primary key
     protected $primaryKey = 'nis';
@@ -31,7 +31,7 @@ class SiswaModel extends Model
 
     public function akun()
     {
-        return $this->belongsTo(User::class, 'id_akun');
+        return $this->hasOne(User::class, 'id_akun');
     }
 
     public function kelas()

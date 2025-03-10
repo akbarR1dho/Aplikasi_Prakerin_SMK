@@ -10,7 +10,7 @@ class JurusanModel extends Model
     //
     use HasUuids;
 
-    protected $table = 'kelas';
+    protected $table = 'jurusan';
 
     protected $fillable = [
         'nama',
@@ -24,6 +24,6 @@ class JurusanModel extends Model
 
     public function kaprog()
     {
-        return $this->belongsTo(GuruModel::class, 'kaprog');
+        return $this->hasOne(GuruModel::class, 'id', 'kaprog');
     }
 }

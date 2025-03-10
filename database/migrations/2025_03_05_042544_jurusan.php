@@ -15,8 +15,8 @@ return new class extends Migration
         //
         Schema::create('jurusan', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('nama', 20)->unique();
-            $table->foreignUuid('kaprog')->constrained('guru')->onDelete('cascade');
+            $table->string('nama', 100)->unique();
+            $table->foreignUuid('kaprog')->nullable(true)->unique()->constrained('guru')->nullOnDelete();
             $table->timestamps();
         });
     }
