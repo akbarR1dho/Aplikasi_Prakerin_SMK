@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Validator;
 class AuthController extends Controller
 {
     //
+    public function index()
+    {
+        return view('login-form');
+    }
+
     public function login()
     {
         $validator = Validator::make(request()->all(), [

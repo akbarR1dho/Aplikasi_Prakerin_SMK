@@ -16,10 +16,10 @@ return new class extends Migration
         Schema::create('kelas', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('angkatan', 5);
-            $table->enum('tingkat', ['10', '11', '12']);
+            $table->enum('tingkat', ['11', '12']);
             $table->enum('kelompok', ['A', 'B', 'C']);
             $table->foreignUuid('id_jurusan')->constrained('jurusan')->onDelete('cascade');
-            $table->foreignUuid('walas')->constrained('guru')->nullOnDelete()->nullable(true);
+            $table->foreignUuid('walas')->nullable(true)->constrained('guru')->nullOnDelete();
             $table->timestamps();
         });
     }

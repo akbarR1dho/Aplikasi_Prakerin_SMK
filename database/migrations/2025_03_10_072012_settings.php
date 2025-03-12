@@ -24,6 +24,7 @@ return new class extends Migration
         DB::table('settings')->insert([
             ['key' => 'app_name', 'value' => 'Aplikasi Prakerin', 'created_at' => now(), 'updated_at' => now()],
             ['key' => 'app_icon', 'value' => 'icon/default.jpg', 'created_at' => now(), 'updated_at' => now()],
+            ['key' => 'app_default_password', 'value' => 'password#1234', 'created_at' => now(), 'updated_at' => now()],
         ]);
     }
 

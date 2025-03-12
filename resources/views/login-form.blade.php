@@ -24,7 +24,7 @@
                             <!-- Alert Message -->
                             <x-flash-message />
 
-                            <form action="{{ route('login-post') }}" method="POST">
+                            <form action="{{ route('login') }}" method="POST">
                                 @csrf
                                 <div class="row gy-3 overflow-hidden">
                                     <div class="col-12">

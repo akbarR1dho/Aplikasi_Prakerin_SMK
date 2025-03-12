@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\SettingsModel;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
@@ -12,10 +11,7 @@ class SettingsController extends Controller
     //
     public function index()
     {
-        return view('dashboard.settings', [
-            'app_name' => SettingsModel::get('app_name'),
-            'app_icon' => SettingsModel::get('app_icon'),
-        ]);
+        return view('dashboard.settings');
     }
 
     public function update(Request $request)
@@ -23,9 +19,11 @@ class SettingsController extends Controller
         $request->validate([
             'app_name' => 'required|string|max:255',
             'app_icon' => 'nullable|image|mimes:png,jpg,jpeg,svg|max:2048',
+            'app_default_password' => 'required|string|min:6|max:20',
         ]);
 
         SettingsModel::set('app_name', $request->app_name);
+        SettingsModel::set('app_default_password', $request->app_default_password);
 
 
         if ($request->hasFile('app_icon')) {

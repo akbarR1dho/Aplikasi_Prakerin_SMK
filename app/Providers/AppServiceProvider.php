@@ -54,6 +54,7 @@ class AppServiceProvider extends ServiceProvider
         $settings = [
             'app_name' => SettingsModel::get('app_name'),
             'app_icon' => SettingsModel::get('app_icon'),
+            'app_default_password' => SettingsModel::get('app_default_password'),
         ];
 
         View::share('settings', $settings);
