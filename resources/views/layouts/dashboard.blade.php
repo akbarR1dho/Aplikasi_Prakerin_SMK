@@ -30,8 +30,6 @@
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="{{ asset('dashboard/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
 
-    <!-- Page CSS -->
-
     <!-- Helpers -->
     <script src="{{ asset('dashboard/vendor/js/helpers.js') }}"></script>
 
