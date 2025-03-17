@@ -38,7 +38,7 @@
                     <li>
                         <a class="dropdown-item" href="#">
                             <i class="bx bx-user me-2"></i>
-                            <span class="align-middle">My Profile</span>
+                            <span class="align-middle">Profil</span>
                         </a>
                     </li>
 
@@ -46,7 +46,7 @@
                     <li>
                         <a class="dropdown-item cursor-pointer" href="{{ route('settings.index') }}">
                             <i class='bx bx-cog me-2'></i>
-                            <span class="align-middle">Settings</span>
+                            <span class="align-middle">Pengaturan</span>
                         </a>
                     </li>
                     @endif
@@ -55,10 +55,10 @@
                         <div class="dropdown-divider"></div>
                     </li>
                     <li>
-                        <a class="dropdown-item cursor-pointer" id="logoutButton">
+                        <button type="button" class="dropdown-item cursor-pointer" id="logoutButton">
                             <i class="bx bx-power-off me-2"></i>
-                            <span class="align-middle">Log Out</span>
-                        </a>
+                            <span class="align-middle">Keluar</span>
+                        </button>
                     </li>
                 </ul>
             </li>

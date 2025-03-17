@@ -9,7 +9,7 @@
     </div>
 
     <div class="card-body">
-        <form action="{{ route('settings.update') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('settings.update') }}" method="POST" enctype="multipart/form-data" id="formSettings">
             @csrf
 
             <div class="mb-3">
@@ -34,4 +34,20 @@
         </form>
     </div>
 </div>
+@endsection
+
+@section('script')
+<script>
+    $(document).ready(function() {
+        $('#formSettings').submit(function(e) {
+            e.preventDefault();
+
+            $isConfirmed = confirm('Apakah anda yakin ingin menyimpan pengaturan aplikasi?');
+
+            if ($isConfirmed) {
+                $this.submit();
+            }
+        })
+    })
+</script>
 @endsection

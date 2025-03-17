@@ -96,18 +96,22 @@
 
     <script>
         document.getElementById("logoutButton").addEventListener("click", function() {
-            fetch("{{ route('logout') }}", {
-                method: "POST",
-                headers: {
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}",
-                    "Content-Type": "application/json"
-                }
-            }).then(response => {
-                if (response.ok) {
-                    alert("Logout berhasil");
-                    window.location.href = "/login"; // Redirect ke halaman login setelah logout
-                }
-            }).catch(error => alert("Logout gagal"));
+            isConfirmed = confirm("Apakah anda yakin ingin keluar?");
+
+            if (isConfirmed) {
+                fetch("{{ route('logout') }}", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                        "Content-Type": "application/json"
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        alert("Logout berhasil");
+                        window.location.href = "/login"; // Redirect ke halaman login setelah logout
+                    }
+                }).catch(error => alert("Logout gagal"));
+            }
         });
     </script>
 </body>

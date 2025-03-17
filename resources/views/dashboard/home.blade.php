@@ -11,8 +11,7 @@
                     <div class="card-body">
                         <h5 class="card-title text-primary">Selamat Datang Kembali, {{ $nama }}</h5>
                         <p class="mb-4">
-                            You have done <span class="fw-bold">72%</span> more sales today. Check your new badge in
-                            your profile.
+                            Lorem <span class="fw-bold">ipsum</span> dolor sit amet.
                         </p>
 
                         <a href="javascript:;" class="btn btn-sm btn-outline-primary">View Badges</a>
