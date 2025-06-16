@@ -24,4 +24,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (NotFoundHttpException $e) {
             return response()->view('errors.404', [], 404);
         });
+        
+        // Tangani View Not Found (biasanya InvalidArgumentException)
+        $exceptions->render(function (InvalidArgumentException $e) {
+            if (str_contains($e->getMessage(), 'View')) {
+                return response()->view('errors.404', [], 404);
+            }
+
+            return null; // lempar ke exception handler bawaan kalau bukan error view
+        });
     })->create();

@@ -2,9 +2,9 @@
     <div class="app-brand demo">
         <a href="/home" class="app-brand-link">
             <span class="app-brand-logo demo me-2">
-                <img src="{{ asset($settings['app_icon']) }}" alt="Logo" width="35" height="35">
+                <img src="{{ asset($pengaturan['app_icon']) }}" alt="Logo" width="35" height="35">
             </span>
-            <span class="menu-text fw-bolder m-0 h5">{{ $settings['app_name'] }}</span>
+            <span class="menu-text fw-bolder m-0 h5">{{ $pengaturan['app_name'] }}</span>
         </a>
 
         <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">

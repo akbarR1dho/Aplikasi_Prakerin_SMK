@@ -4,12 +4,10 @@ namespace App\Providers;
 
 use App\Models\GuruModel;
 use App\Models\HubinModel;
-use App\Models\SettingsModel;
+use App\Models\PengaturanModel;
 use App\Models\SiswaModel;
 use App\View\Components\FlashMessage;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -51,12 +49,12 @@ class AppServiceProvider extends ServiceProvider
 
         Blade::component('flash-message', FlashMessage::class);
         
-        $settings = [
-            'app_name' => SettingsModel::get('app_name'),
-            'app_icon' => SettingsModel::get('app_icon'),
-            'app_default_password' => SettingsModel::get('app_default_password'),
+        $pengaturan = [
+            'app_name' => PengaturanModel::get('app_name'),
+            'app_icon' => PengaturanModel::get('app_icon'),
+            'app_default_password' => PengaturanModel::get('app_default_password'),
         ];
 
-        View::share('settings', $settings);
+        View::share('pengaturan', $pengaturan);
     }
 }

@@ -18,7 +18,7 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>
-                        <a class="dropdown-item" href="#">
+                        <a class="dropdown-item" href="/profil">
                             <div class="d-flex">
                                 <div class="flex-shrink-0 me-3">
                                     <div class="avatar avatar-online">
@@ -35,16 +35,10 @@
                     <li>
                         <div class="dropdown-divider"></div>
                     </li>
-                    <li>
-                        <a class="dropdown-item" href="#">
-                            <i class="bx bx-user me-2"></i>
-                            <span class="align-middle">Profil</span>
-                        </a>
-                    </li>
 
                     @if($user->role == 'hubin')
                     <li>
-                        <a class="dropdown-item cursor-pointer" href="{{ route('settings.index') }}">
+                        <a class="dropdown-item cursor-pointer" href="/pengaturan">
                             <i class='bx bx-cog me-2'></i>
                             <span class="align-middle">Pengaturan</span>
                         </a>

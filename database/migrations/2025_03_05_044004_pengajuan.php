@@ -19,7 +19,7 @@ return new class extends Migration
             $table->enum('persetujuan_tu', ['setuju', 'tolak']);
             $table->enum('persetujuan_walas', ['setuju', 'tolak']);
             $table->enum('persetujuan_kaprog', ['setuju', 'tolak']);
-            $table->string('nama_industri', 100);
+            $table->string('nama_industri', 100)->index();
             $table->string('kontak_industri', 150);
             $table->string('alamt_industri', 255);
             $table->string('id_siswa', 30);

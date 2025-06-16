@@ -14,16 +14,12 @@ class AuthController extends Controller
         return view('login-form');
     }
 
-    public function login()
+    public function login(Request $request)
     {
-        $validator = Validator::make(request()->all(), [
+        $request->validate([
             'username' => 'required',
             'password' => 'required|min:6',
         ]);
-
-        if ($validator->fails()) {
-            return redirect('/login')->withErrors($validator)->withInput();
-        }
 
         if (auth()->attempt(request()->only('username', 'password'))) {         
             return redirect()->route('home')->with('success', 'Login berhasil');

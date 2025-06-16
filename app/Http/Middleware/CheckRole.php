@@ -7,12 +7,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\GuruModel;
 use App\Models\HubinModel;
+use App\Models\JurusanModel;
+use App\Models\KelasModel;
 use App\Models\SiswaModel;
 
 class CheckRole
 {
     public function handle(Request $request, Closure $next, ...$roles)
     {
+        if ($request->session()->has('session_expired')) {
+            return redirect('/login')->with('error', 'Sesi Anda telah habis, silakan login kembali');
+        }
+
         // Ambil user yang sedang login
         $user = Auth::user();
 
@@ -42,10 +48,10 @@ class CheckRole
                 }
 
                 // Jika role tambahan diperlukan (walas/kaprog/pembimbing)
-                if (in_array('walas', $roles) && !$guru->roles->contains('nama_role', 'walas')) {
+                if (in_array('walas', $roles) && !$guru->roles->contains('nama_role', 'walas') && KelasModel::where('walas', $guru->id)->doesntExist()) {
                     return redirect('/')->with('error', 'Anda tidak memiliki akses sebagai Walas.');
                 }
-                if (in_array('kaprog', $roles) && !$guru->roles->contains('nama_role', 'kaprog')) {
+                if (in_array('kaprog', $roles) && !$guru->roles->contains('nama_role', 'kaprog') && JurusanModel::where('kaprog', $guru->id)->doesntExist()) {
                     return redirect('/')->with('error', 'Anda tidak memiliki akses sebagai Kaprog.');
                 }
                 if (in_array('pembimbing', $roles) && !$guru->roles->contains('nama_role', 'pembimbing')) {

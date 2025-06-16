@@ -9,28 +9,31 @@
     </div>
 
     <div class="card-body">
-        <form action="{{ route('settings.update') }}" method="POST" enctype="multipart/form-data" id="formSettings">
+        <form action="{{ route('pengaturan.update') }}" method="POST" enctype="multipart/form-data" id="formSettings">
             @csrf
 
             <div class="mb-3">
                 <label for="app_name" class="form-label">Nama Aplikasi</label>
-                <input type="text" id="app_name" name="app_name" class="form-control" value="{{ $settings['app_name'] }}" required>
+                <input type="text" id="app_name" name="app_name" class="form-control" value="{{ $pengaturan['app_name'] }}" required>
             </div>
 
             <div class="mb-3">
                 <label for="app_icon" class="form-label">Logo Aplikasi</label>
                 <div class="my-2">
-                    <img src="{{ asset($settings['app_icon']) }}" alt="App Icon" width="100">
+                    <img src="{{ asset($pengaturan['app_icon']) }}" alt="App Icon" width="100">
                 </div>
                 <input type="file" id="app_icon" name="app_icon" class="form-control">
             </div>
 
             <div class="mb-3">
                 <label for="app_default_password" class="form-label">Default Password</label>
-                <input type="text" id="app_default_password" name="app_default_password" class="form-control" value="{{ $settings['app_default_password'] }}" required>
+                <input type="text" id="app_default_password" name="app_default_password" class="form-control" value="{{ $pengaturan['app_default_password'] }}" required>
             </div>
 
-            <button type="submit" class="btn btn-primary">Simpan</button>
+            <div class="d-flex gap-3">
+                <button type="submit" class="btn btn-primary">Simpan</button>
+                <a href="{{ url()->previous() ?? route('home') }}" class="btn btn-secondary">Kembali</a>
+            </div>
         </form>
     </div>
 </div>
@@ -42,10 +45,10 @@
         $('#formSettings').submit(function(e) {
             e.preventDefault();
 
-            $isConfirmed = confirm('Apakah anda yakin ingin menyimpan pengaturan aplikasi?');
+            const isConfirmed = confirm('Apakah anda yakin ingin menyimpan pengaturan aplikasi?');
 
-            if ($isConfirmed) {
-                $this.submit();
+            if (isConfirmed) {
+                this.submit();
             }
         })
     })

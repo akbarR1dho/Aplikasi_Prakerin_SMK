@@ -12,12 +12,12 @@
         name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>Dashboard {{ $settings['app_name'] }}</title>
+    <title>Dashboard {{ $pengaturan['app_name'] }}</title>
 
     <meta name="description" content="" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset($settings['app_icon']) }}" />
+    <link rel="icon" type="image/x-icon" href="{{ asset($pengaturan['app_icon']) }}" />
 
     <!-- Icons. Uncomment required icon fonts -->
     <link rel="stylesheet" href="{{ asset('dashboard/vendor/fonts/boxicons.css') }}" />
@@ -92,7 +92,7 @@
     <!-- Page JS -->
     <script src="{{ asset('dashboard/js/dashboards-analytics.js') }}"></script>
 
-    @yield('script')`
+    @yield('script')
 
     <script>
         document.getElementById("logoutButton").addEventListener("click", function() {

@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('tu', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('email', 150)->unique()->nullable(false);
-            $table->string('nama', 100);
+            $table->string('nama', 100)->index();
             $table->string('no_telp', 20);
             $table->enum('jenis_kelamin', ['L', 'P']);
             $table->foreignUuid('id_akun')->unique()->constrained('akun')->onDelete('cascade');

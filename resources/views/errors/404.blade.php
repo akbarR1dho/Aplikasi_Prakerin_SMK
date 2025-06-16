@@ -13,12 +13,12 @@
         name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>Dashboard {{ $settings['app_name'] }}</title>
+    <title>Dashboard {{ $pengaturan['app_name'] }}</title>
 
     <meta name="description" content="" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset($settings['app_icon']) }}" />
+    <link rel="icon" type="image/x-icon" href="{{ asset($pengaturan['app_icon']) }}" />
 
     <!-- Core CSS -->
     <link rel="stylesheet" href="{{ asset('dashboard/vendor/css/core.css') }}" class="template-customizer-core-css" />
@@ -38,7 +38,7 @@
         <div class="misc-wrapper">
             <h2 class="mb-2 mx-2">Page Not Found :(</h2>
             <p class="mb-4 mx-2">Oops! 😖 The requested URL was not found on this server.</p>
-            <a href="/home" class="btn btn-primary">Back to home</a>
+            <a href="{{ url()->previous() ?? route('home') }}" class="btn btn-primary">Go Back</a>
             <div class="mt-3">
                 <img
                     src="{{ asset('dashboard/img/illustrations/page-misc-error-light.png') }}"

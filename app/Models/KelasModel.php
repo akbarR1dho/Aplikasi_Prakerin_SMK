@@ -16,8 +16,9 @@ class KelasModel extends Model
         'angkatan',
         'tingkat',
         'kelompok',
+        'id_kelas',
         'id_jurusan',
-        'walas',
+        'id_walas',
     ];
 
     public function jurusan()
@@ -32,6 +33,6 @@ class KelasModel extends Model
 
     public function walas()
     {
-        return $this->belongsTo(GuruModel::class, 'walas');
+        return $this->belongsTo(GuruModel::class, 'id_walas');
     }
 }
