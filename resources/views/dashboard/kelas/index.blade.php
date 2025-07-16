@@ -1,8 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('header')
-@vite('resources/js/app.js')
-@endsection
+@section('title', 'Daftar Kelas - ' . $pengaturan['app_name'])
 
 @section('content')
 <div class="card">
@@ -61,7 +59,6 @@
 @endsection
 
 @section('script')
-<script src="{{ asset('js/select2-init-custom.js') }}"></script>
 <script>
     $(document).ready(function() {
         const table = $('#data-kelas').DataTable({
@@ -71,6 +68,7 @@
             ajax: {
                 url: "{{ route('kelas.index') }}",
                 data: function(d) {
+                    d.jurusan = $('#filter-jurusan').val();
                     d.angkatan = $('#filter-angkatan').val();
                     d.tingkat = $('#filter-tingkat').val();
                     d.kelompok = $('#filter-kelompok').val();
@@ -114,6 +112,14 @@
             ]
         });
 
+        // Event handler untuk tombol Filter
+        $('#btnResetFilter').on('click', function() {
+            // Mengatur nilai filter menjadi kosong
+            $('#filter-angkatan').val('');
+            $('#filter-tingkat').val('');
+            $('#filter-kelompok').val('');
+        });
+
         // Event handler untuk tombol Terapkan Filter
         $('#btnTerapkanFilter').on('click', function() {
             // Menutup modal setelah filter diterapkan
@@ -123,7 +129,7 @@
             table.draw();
         });
 
-        select2Custom('#walasSelect', '/kelas/load-walas', '#modalGantiWalas');
+        select2Custom('#walasSelect', '/kelas/load-walas', 'nama', 'Pilih Walas...', '#modalGantiWalas');
 
         $(document).on('click', '#btnGantiWalas', function() {
             let id = $(this).data('id'); // Ambil ID dari tombol yang diklik

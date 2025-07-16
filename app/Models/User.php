@@ -23,6 +23,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'username',
+        'email',
         'password',
         'role',
     ];
@@ -50,11 +51,16 @@ class User extends Authenticatable
 
     public function hubin()
     {
-        return $this->belongsTo(HubinModel::class, 'id_akun', 'id');
+        return $this->hasOne(HubinModel::class, 'id_akun');
     }
 
     public function guru()
     {
-        return $this->belongsTo(GuruModel::class, 'id_akun', 'id');
+        return $this->hasOne(GuruModel::class, 'id_akun');
+    }
+
+    public function siswa()
+    {
+        return $this->hasOne(SiswaModel::class, 'id_akun');
     }
 }

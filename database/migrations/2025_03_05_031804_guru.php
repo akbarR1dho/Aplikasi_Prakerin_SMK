@@ -16,7 +16,6 @@ return new class extends Migration
         Schema::create('guru', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nip', 20)->unique()->nullable(true);
-            $table->string('email', 150)->unique()->nullable(false);
             $table->string('nama', 100)->index();
             $table->string('no_telp', 20);
             $table->enum('jenis_kelamin', ['L', 'P']);

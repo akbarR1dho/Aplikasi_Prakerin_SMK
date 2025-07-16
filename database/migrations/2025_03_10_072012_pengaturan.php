@@ -20,7 +20,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Insert default pengaturan
         DB::table('pengaturan')->insert([
             ['key' => 'app_name', 'value' => 'Aplikasi Prakerin', 'created_at' => now(), 'updated_at' => now()],
             ['key' => 'app_icon', 'value' => 'icon/default.jpg', 'created_at' => now(), 'updated_at' => now()],

@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Imports\GuruImport;
 use App\Models\GuruModel;
 use App\Models\PengaturanModel;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Str;
 
 class GuruController extends Controller
 {
@@ -16,7 +19,7 @@ class GuruController extends Controller
     {
         if ($request->ajax()) {
 
-            $data = GuruModel::query()->select('id', 'nama', 'email', 'nip')->get();
+            $data = GuruModel::query()->select('id', 'nama', 'nip')->get();
 
             return DataTables::of($data)
                 ->addIndexColumn()
@@ -76,54 +79,54 @@ class GuruController extends Controller
 
     public function tambah(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'nama' => 'required',
-            'nip' => 'unique:guru,nip|max:18|nullable',
-            'email' => 'required|email|unique:guru,email',
-            'no_telp' => 'required',
+            'nip' => 'unique:guru,nip|digits:18|nullable',
+            'email' => 'required|email|unique:akun,email',
+            'no_telp' => 'required|string|regex:/^[0-9\+]+$/',
             'jenis_kelamin' => 'required|in:L,P',
+        ], [
+            'nama.required' => 'Nama harus diisi',
+            'nip.required' => 'NIP harus diisi',
+            'nip.unique' => 'NIP sudah terdaftar',
+            'nip.digits' => 'NIP harus terdiri dari 18 angka dan tidak boleh lebih',
+            'email.required' => 'Email harus diisi',
+            'email.email' => 'Format email tidak valid',
+            'email.unique' => 'Email sudah terdaftar',
+            'no_telp.required' => 'Nomor telepon harus diisi',
+            'jenis_kelamin.required' => 'Jenis kelamin harus diisi',
+            'jenis_kelamin.in' => 'Jenis kelamin hanya boleh Laki-laki atau Perempuan',
         ]);
 
-        $guru = GuruModel::create([
-            'nip' => $request->nip,
-            'nama' => $request->nama,
-            'email' => $request->email,
-            'no_telp' => $request->no_telp,
-            'jenis_kelamin' => $request->jenis_kelamin,
-        ]);
+        try {
+            DB::transaction(function () use ($request, $data) {
+                // Membuat akun guru
+                $namaAwal = explode(' ', trim($request->nama))[0];
+                $akun = User::create([
+                    'username' => $namaAwal . substr(Str::uuid(), 0, 4),
+                    'email' => $request->email,
+                    'password' => PengaturanModel::get('app_default_password'),
+                    'role' => 'guru',
+                ]);
 
-        if (!$guru) {
-            return redirect()->route('akun-guru.tambah')->with('error', 'Gagal membuat data guru');
+                // Membuat data guru
+                GuruModel::create([
+                    ...$data,
+                    'id_akun' => $akun->id
+                ]);
+            });
+
+            return redirect()->route('akun-guru.index')->with('success', 'Akun dan data guru berhasil dibuat');
+        } catch (\Exception $e) {
+            return redirect()->route('akun-guru.form-tambah')->with('error', 'Gagal membuat data guru')->withInput();
         }
-
-        return redirect()->route('akun-guru.index')->with('success', 'Akun dan data guru berhasil dibuat');
-    }
-
-    private function hpausGelar($nama)
-    {
-        // Daftar gelar umum (case insensitive)
-        $gelar = ['dr', 'dr.', 'dokter', 'prof', 'prof.', 'hj', 'hj.', 'haji', 'ir', 'ir.'];
-
-        // Pisahkan nama menjadi array kata
-        $partNama = explode(' ', trim($nama));
-
-        // Cek jika kata pertama adalah gelar
-        $kataAwal = strtolower($partNama[0]);
-        if (in_array($kataAwal, $gelar)) {
-            // Hapus kata pertama (gelar)
-            array_shift($partNama);
-        }
-
-        return implode(' ', $partNama);
     }
 
     public function hapus($id)
     {
         try {
             $guru = GuruModel::findOrFail($id);
-
             $guru->akun()->delete();
-            $guru->delete();
 
             return response()->json(['message' => 'Akun dan data guru berhasil dihapus'], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -141,22 +144,29 @@ class GuruController extends Controller
             return redirect()->route('akun-guru.index')->with('error', 'Akun guru tidak ditemukan');
         }
 
-        $request->validate([
+        $data = $request->validate([
             'nama' => 'required',
+            'username' => 'required|string|unique:akun,username,' . $guru->id_akun,
             'nip' => 'unique:guru,nip,' . $guru->id . '|max:18|nullable',
-            'email' => 'required|email|unique:guru,email,' . $guru->id,
-            'no_telp' => 'required',
+            'email' => 'required|email|unique:akun,email,' . $guru->id_akun,
+            'no_telp' => 'required|string|regex:/^[0-9\+]+$/',
             'jenis_kelamin' => 'required|in:L,P',
         ]);
 
         try {
-            $guru->update([
-                'nip' => $request->nip,
-                'nama' => $request->nama,
-                'email' => $request->email,
-                'no_telp' => $request->no_telp,
-                'jenis_kelamin' => $request->jenis_kelamin,
-            ]);
+            $akun = $guru->akun;
+
+            if($guru->nama != $request->nama && $akun->username == $request->username){
+                // Update username akun guru
+                $namaAwal = explode(' ', trim($request->nama))[0];
+                $akun->update([
+                    'username' => $namaAwal . substr(Str::uuid(), 0, 4)
+                ]);
+            }
+
+            // Update data dan akun guru
+            $akun->update($data);
+            $guru->update($data);
 
             return redirect()->route('akun-guru.index')->with('success', 'Data guru berhasil diubah');
         } catch (\Exception $e) {
@@ -179,7 +189,7 @@ class GuruController extends Controller
 
             return response()->json(['message' => 'Password berhasil direset']);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Terjadi kesalahan saat reset password'], 500);
+            return response()->json(['message' => 'Gagal mereset password'], 500);
         }
     }
 
@@ -192,44 +202,66 @@ class GuruController extends Controller
     {
         $request->validate([
             'file' => 'required|mimes:csv,xls,xlsx|max:2048',
+        ], [
+            'file.required' => 'File harus diisi',
+            'file.mimes' => 'Format file harus CSV, XLS, atau XLSX',
+            'file.max' => 'Ukuran file maksimal 2MB',
         ]);
 
-        $import = new GuruImport();
-        $import->import($request->file('file'));
+        DB::beginTransaction();
 
-        $jumlahError = collect($import->failures())
-            ->map(fn($fail) => $fail->row())
-            ->filter() // buang null
-            ->unique()
-            ->count();
-        $jumlahBaris = $import->totalRows;
-        $message = null;
-        $status = null;
+        try {
+            $import = new GuruImport();
+            $import->import($request->file('file'));
 
-        if ($jumlahError === $jumlahBaris && $jumlahBaris > 0) {
-            $message = 'Semua data gagal diimport';
-            $status = 'error';
-        } elseif ($jumlahError > 0 && $jumlahError < $jumlahBaris) {
-            $message = 'Sebagian data berhasil diimport';
-            $status = 'warning';
-        } else {
-            $message = 'Semua data berhasil diimport';
-            $status = 'success';
-        }
+            // Hitung error
+            $failures = $import->failures();
+            $jumlahError = collect($failures)
+                ->map(fn($fail) => $fail->row())
+                ->filter()
+                ->unique()
+                ->count();
 
-        if ($import->failures()->isNotEmpty()) {
-            $messages = [];
+            $jumlahBaris = $import->totalRows;
 
-            foreach ($import->failures() as $failure) {
-                $messages[] = "Baris {$failure->row()}: " . implode(', ', $failure->errors());
+            // Jika semua baris error, rollback
+            if ($jumlahError === $jumlahBaris && $jumlahBaris > 0) {
+                throw new \Exception('Semua data gagal divalidasi');
             }
 
-            return redirect()->route('akun-guru.form-import')
-                ->with($status, $message) // flash utama
-                ->with('import_errors', $messages); // kumpulan error detail
+            // Jika ada error parsial
+            if ($failures->isNotEmpty()) {
+                DB::commit(); // Commit data yang valid
+
+                $messages = $failures->map(function ($failure) {
+                    return "Baris {$failure->row()}: " . implode(', ', $failure->errors());
+                })->toArray();
+
+                return redirect()
+                    ->route('akun-guru.form-import')
+                    ->with('warning', 'Sebagian data berhasil diimport')
+                    ->with('import_errors', $messages);
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->route('akun-guru.index')
+                ->with('success', 'Semua data berhasil diimport');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            $errorMessage = 'Import gagal: ' . $e->getMessage();
+
+            // Jika ada error validasi dari Excel
+            if ($e instanceof \Maatwebsite\Excel\Validators\ValidationException) {
+                $errorMessage = 'Validasi data gagal: ' . $e->getMessage();
+            }
+
+            return redirect()
+                ->route('akun-guru.form-import')
+                ->with('error', $errorMessage)
+                ->withInput();
         }
-
-
-        return redirect()->route('akun-guru.index')->with($status, $message);
     }
 }

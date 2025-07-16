@@ -1,5 +1,7 @@
 @extends('layouts.dashboard')
 
+@section('title', 'Detail Kelas - ' . $pengaturan['app_name'])
+
 @section('content')
 <div class="card">
     <div class="card-header">

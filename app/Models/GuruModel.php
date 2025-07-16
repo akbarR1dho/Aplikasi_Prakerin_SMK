@@ -16,61 +16,74 @@ class GuruModel extends Model
     protected $fillable = [
         'nip',
         'nama',
-        'email',
         'no_telp',
         'jenis_kelamin',
         'id_akun',
     ];
 
-    protected static function booted()
-    {
-        static::creating(function ($model) {
-            // Normalisasi nama
-            $namaNormalisasi = preg_replace('/\s+/', ' ', trim($model->nama));
+    // protected static function booted()
+    // {
+    //     static::creating(function ($model) {
+    //         // Normalisasi nama
+    //         $namaNormalisasi = preg_replace('/\s+/', ' ', trim($model->nama));
 
-            // Daftar gelar umum (case insensitive)
-            $gelar = ['dr', 'dr.', 'dokter', 'prof', 'prof.', 'hj', 'hj.', 'haji', 'ir', 'ir.'];
+    //         // Daftar gelar umum (case insensitive)
+    //         $gelar = ['dr', 'dr.', 'dokter', 'prof', 'prof.', 'hj', 'hj.', 'haji', 'ir', 'ir.'];
 
-            // Pisahkan nama menjadi array kata
-            $partNama = explode(' ', $namaNormalisasi);
+    //         // Pisahkan nama menjadi array kata
+    //         $partNama = explode(' ', $namaNormalisasi);
 
-            // Cek jika kata pertama adalah gelar
-            $kataAwal = strtolower($partNama[0]);
-            if (in_array($kataAwal, $gelar)) {
-                // Hapus kata pertama (gelar)
-                array_shift($partNama);
-            }
+    //         // Cek jika kata pertama adalah gelar
+    //         $kataAwal = strtolower($partNama[0]);
+    //         if (in_array($kataAwal, $gelar)) {
+    //             // Hapus kata pertama (gelar)
+    //             array_shift($partNama);
+    //         }
 
-            $akun = User::create([
-                'username' => implode(' ', $partNama) . substr(Str::uuid(), 0, 4),
-                'password' => PengaturanModel::get('app_default_password'),
-                'role' => 'guru',
-            ]);
+    //         $akun = User::create([
+    //             'username' => implode(' ', $partNama) . substr(Str::uuid(), 0, 4),
+    //             'password' => PengaturanModel::get('app_default_password'),
+    //             'role' => 'guru',
+    //         ]);
 
-            if (!$akun) {
-                throw new \Exception('Gagal membuat akun');
-            }
+    //         if (!$akun) {
+    //             throw new \Exception('Gagal membuat akun');
+    //         }
 
-            $model->id_akun = $akun->id;
-        });
+    //         $model->id_akun = $akun->id;
+    //     });
 
-        static::updating(function ($model) {
-            if ($model->isDirty('nama')) {
-                $namaAwal = explode(' ', trim($model->getOriginal('nama')))[0];
-                $akun = $model->akun;
+    //     static::updating(function ($model) {
+    //         if ($model->isDirty('nama')) {
+    //             // Normalisasi nama
+    //             $namaNormalisasi = preg_replace('/\s+/', ' ', trim($model->nama));
 
-                if ($akun) {
-                    $akun->update([
-                        'username' => $namaAwal . substr(Str::uuid(), 0, 4),
-                    ]);
-                }
-            }
-        });
-    }
+    //             // Daftar gelar umum (case insensitive)
+    //             $gelar = ['dr', 'dr.', 'dokter', 'prof', 'prof.', 'hj', 'hj.', 'haji', 'ir', 'ir.'];
+
+    //             // Pisahkan nama menjadi array kata
+    //             $partNama = explode(' ', $namaNormalisasi);
+
+    //             // Cek jika kata pertama adalah gelar
+    //             $kataAwal = strtolower($partNama[0]);
+    //             if (in_array($kataAwal, $gelar)) {
+    //                 // Hapus kata pertama (gelar)
+    //                 array_shift($partNama);
+    //             }
+    //             $akun = $model->akun;
+
+    //             if ($akun) {
+    //                 $akun->update([
+    //                     'username' => implode(' ', $partNama) . substr(Str::uuid(), 0, 4),
+    //                 ]);
+    //             }
+    //         }
+    //     });
+    // }
 
     public function akun()
     {
-        return $this->hasOne(User::class, 'id', 'id_akun');
+        return $this->belongsTo(User::class, 'id_akun');
     }
 
     public function roles()

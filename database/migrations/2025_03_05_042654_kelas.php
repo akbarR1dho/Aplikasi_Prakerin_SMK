@@ -15,7 +15,7 @@ return new class extends Migration
         //
         Schema::create('kelas', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('angkatan', 5);
+            $table->smallInteger('angkatan', false, true)->index();
             $table->enum('tingkat', ['11', '12']);
             $table->enum('kelompok', ['A', 'B', 'C']);
             $table->string('id_kelas', 15)->unique();

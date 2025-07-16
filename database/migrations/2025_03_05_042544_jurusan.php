@@ -16,8 +16,8 @@ return new class extends Migration
         Schema::create('jurusan', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nama', 100)->unique();
-            $table->string('kode_jurusan', 3);
-            $table->foreignUuid('kaprog')->nullable(true)->unique()->constrained('guru')->nullOnDelete();
+            $table->string('kode_jurusan', 5)->unique();
+            $table->foreignUuid('id_kaprog')->nullable(true)->unique()->constrained('guru')->nullOnDelete();
             $table->timestamps();
         });
     }

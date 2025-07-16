@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="{{ asset($pengaturan['app_icon']) }}" />
-    <title>Login {{ $pengaturan['app_name'] }}</title>
+    <title>Login - {{ $pengaturan['app_name'] }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -29,13 +29,19 @@
                                 <div class="row gy-3 overflow-hidden">
                                     <div class="col-12">
                                         <div class="form-floating mb-3">
-                                            <input type="text" class="form-control" name="username" id="username" placeholder="Username" required>
-                                            <label for="username" class="form-label">Username</label>
+                                            <input type="text" class="form-control" name="login" id="login" placeholder="Username atau Email" required value="{{ old('login') }}">
+                                            <label for="login" class="form-label">Username/Email</label>
                                         </div>
                                     </div>
                                     <div class="col-12">
                                         <div class="form-floating mb-3">
-                                            <input type="password" class="form-control" name="password" id="password" value="" placeholder="Password" required>
+                                            <input type="password"
+                                                class="form-control"
+                                                name="password"
+                                                id="password"
+                                                value="{{ old('password') }}"
+                                                placeholder="Password"
+                                                required />
                                             <label for="password" class="form-label">Password</label>
                                         </div>
                                     </div>

@@ -6,53 +6,78 @@ use App\Http\Controllers\GuruController;
 use App\Http\Controllers\JurusanController;
 use App\Http\Controllers\KelasController;
 use App\Http\Controllers\PengaturanController;
+use App\Http\Controllers\ProfilController;
+use App\Http\Controllers\SiswaController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::get('/home', [DashboardController::class, 'home'])->name('home')->middleware('auth');
 Route::redirect('/', '/home'); // Mengubah default route ke /home
+Route::get('/home', [DashboardController::class, 'home'])->name('home')->middleware('role');
 
-// Auth Routes
-Route::get('/login', [AuthController::class, 'index'])->middleware('guest');
-Route::post('/login', [AuthController::class, 'login'])->name('login');
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+// Route Autentikasi
+Route::controller(AuthController::class)->group(function () {
+    Route::get('/login', 'index')->middleware('guest');
+    Route::post('/login', 'login')->name('login');
+    Route::post('/logout', 'logout')->name('logout')->middleware('auth');
+});
 
-
+// Route Kelola Pengaturan
 Route::get('/pengaturan', [PengaturanController::class, 'index'])->name('pengaturan.index')->middleware('role:hubin');
-Route::post('/pengaturan/update', [PengaturanController::class, 'update'])->name('pengaturan.update')->middleware('role:hubin');
+Route::post('/pengaturan/update', [PengaturanController::class, 'edit'])->name('pengaturan.edit')->middleware('role:hubin');
 
-// Route Guru
-Route::prefix('akun-guru')->middleware('role:hubin')->group(function () {
-    Route::get('/', [GuruController::class, 'index'])->name('akun-guru.index');
-    Route::get('/detail/{id}', [GuruController::class, 'detail'])->name('akun-guru.detail');
-    Route::get('/tambah', [GuruController::class, 'formTambah'])->name('akun-guru.form-tambah');
-    Route::post('/tambah', [GuruController::class, 'tambah'])->name('akun-guru.tambah');
-    Route::get('/import', [GuruController::class, 'formImport'])->name('akun-guru.form-import');
-    Route::post('/import', [GuruController::class, 'import'])->name('akun-guru.import');
-    Route::get('/edit/{id}', [GuruController::class, 'formEdit'])->name('akun-guru.form-edit');
-    Route::put('/edit/{id}', [GuruController::class, 'edit'])->name('akun-guru.edit');
-    Route::post('/reset-password/{id}', [GuruController::class, 'resetPassword'])->name('akun-guru.reset-password');
-    Route::delete('/hapus/{id}', [GuruController::class, 'hapus'])->name('akun-guru.hapus');
+// Route Kelola Profil
+Route::prefix('profil')->controller(ProfilController::class)->middleware('role')->group(function () {
+    Route::get('/', 'index')->name('profil.index');
+    Route::put('/edit', 'edit')->name('profil.edit');
 });
 
-// Route Jurusan
-Route::prefix('jurusan')->middleware('role:hubin')->group(function () {
-    Route::get('/', [JurusanController::class, 'index'])->name('jurusan.index');
-    Route::get('/load-kaprog', [JurusanController::class, 'loadKaprog'])->name('jurusan.load-kaprog');
-    Route::get('/get-data/{id}', [JurusanController::class, 'getData'])->name('jurusan.get-data');
-    Route::post('/simpan', [JurusanController::class, 'simpan'])->name('jurusan.simpan');
-    Route::delete('/{id}', [JurusanController::class, 'hapus'])->name('jurusan.hapus');
+// Route Kelola Akun Guru
+Route::prefix('akun-guru')->controller(GuruController::class)->middleware('role:hubin')->group(function () {
+    Route::get('/', 'index')->name('akun-guru.index');
+    Route::get('/detail/{id}', 'detail')->name('akun-guru.detail');
+    Route::get('/tambah', 'formTambah')->name('akun-guru.form-tambah');
+    Route::post('/tambah', 'tambah')->name('akun-guru.tambah');
+    Route::get('/import', 'formImport')->name('akun-guru.form-import');
+    Route::post('/import', 'import')->name('akun-guru.import');
+    Route::get('/edit/{id}', 'formEdit')->name('akun-guru.form-edit');
+    Route::put('/edit/{id}', 'edit')->name('akun-guru.edit');
+    Route::post('/reset-password/{id}', 'resetPassword')->name('akun-guru.reset-password');
+    Route::delete('/hapus/{id}', 'hapus')->name('akun-guru.hapus');
 });
 
-// Route Kelas
-Route::prefix('kelas')->middleware('role:hubin')->group(function () {
-    Route::get('/', [KelasController::class, 'index'])->name('kelas.index');
-    Route::get('/tambah', [KelasController::class, 'formTambah'])->name('kelas.form-tambah');
-    Route::post('/tambah-data', [KelasController::class, 'tambah'])->name('kelas.tambah');
-    Route::get('/load-jurusan', [KelasController::class, 'loadJurusan'])->name('kelas.load-jurusan');
-    Route::get('/load-walas', [KelasController::class, 'loadWalas'])->name('kelas.load-walas');
-    Route::get('/detail/{id}', [KelasController::class, 'detail'])->name('kelas.detail');
-    Route::get('/data-walas/{id}', [KelasController::class, 'dataWalas'])->name('kelas.data-walas');
-    Route::put('/ganti-walas', [KelasController::class, 'gantiWalas'])->name('kelas.ganti-walas');
-    Route::delete('/{id}', [KelasController::class, 'hapus'])->name('kelas.hapus');
+// Route Kelola Jurusan
+Route::prefix('jurusan')->controller(JurusanController::class)->middleware('role:hubin')->group(function () {
+    Route::get('/', 'index')->name('jurusan.index');
+    Route::get('/load-kaprog', 'loadKaprog')->name('jurusan.load-kaprog');
+    Route::get('/get-data/{id}', 'getData')->name('jurusan.get-data');
+    Route::post('/simpan', 'simpan')->name('jurusan.simpan');
+    Route::delete('/{id}', 'hapus')->name('jurusan.hapus');
+});
+
+// Route Kelola Kelas
+Route::prefix('kelas')->controller(KelasController::class)->middleware('role:hubin')->group(function () {
+    Route::get('/', 'index')->name('kelas.index');
+    Route::get('/tambah', 'formTambah')->name('kelas.form-tambah');
+    Route::post('/tambah-data', 'tambah')->name('kelas.tambah');
+    Route::get('/load-jurusan', 'loadJurusan')->name('kelas.load-jurusan');
+    Route::get('/load-walas', 'loadWalas')->name('kelas.load-walas');
+    Route::get('/detail/{id}', 'detail')->name('kelas.detail');
+    Route::get('/data-walas/{id}', 'dataWalas')->name('kelas.data-walas');
+    Route::put('/ganti-walas', 'gantiWalas')->name('kelas.ganti-walas');
+    Route::delete('/{id}', 'hapus')->name('kelas.hapus');
+});
+
+// Route Kelola Akun Siswa
+Route::prefix('akun-siswa')->controller(SiswaController::class)->middleware('role:hubin')->group(function () {
+    Route::get('/', 'index')->name('akun-siswa.index');
+    Route::get('/detail/{nis}', 'detail')->name('akun-siswa.detail');
+    Route::get('/tambah', 'formTambah')->name('akun-siswa.form-tambah');
+    Route::post('/tambah', 'tambah')->name('akun-siswa.tambah');
+    Route::get('/load-kelas', 'loadKelas')->name('akun-siswa.load-kelas');
+    Route::get('/import', 'formImport')->name('akun-siswa.form-import');
+    Route::post('/import', 'import')->name('akun-siswa.import');
+    Route::get('/edit/{nis}', 'formEdit')->name('akun-siswa.form-edit');
+    Route::put('/edit/{nis}', 'edit')->name('akun-siswa.edit');
+    Route::post('/reset-password/{nis}', 'resetPassword')->name('akun-siswa.reset-password');
+    Route::delete('/{nis}', 'hapus')->name('akun-siswa.hapus');
 });

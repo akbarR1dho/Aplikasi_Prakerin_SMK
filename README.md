@@ -22,7 +22,7 @@ Composer :
 composer install
 ```
 
-### 2. Install Depensi Javascript
+### 2. Install Dependensi Javascript
 
 Npm :
 

@@ -1,8 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('header')
-@vite('resources/js/app.js')
-@endsection
+@section('title', 'Daftar Guru - ' . $pengaturan['app_name'])
 
 @section('content')
 <div class="card">
@@ -35,7 +33,6 @@
                 <tr>
                     <th>Nama</th>
                     <th class="text-start">NIP</th>
-                    <th>Email</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -64,10 +61,6 @@
                     name: 'nip',
                     class: 'text-start',
                     defaultContent: '-'
-                },
-                {
-                    data: 'email',
-                    name: 'email'
                 },
                 {
                     data: 'action',

@@ -3,17 +3,18 @@
 namespace App\Imports;
 
 use App\Models\GuruModel;
+use App\Models\PengaturanModel;
+use App\Models\User;
 use Maatwebsite\Excel\Concerns\Importable;
-use Maatwebsite\Excel\Concerns\SkipsErrors;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
-use Maatwebsite\Excel\Concerns\SkipsOnError;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Events\BeforeImport;
-use Maatwebsite\Excel\Validators\Failure;
+use Illuminate\Support\Str;
+
 
 class GuruImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithValidation, WithEvents
 {
@@ -50,22 +51,34 @@ class GuruImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithValidat
 
     public function model(array $row)
     {
+        $namaNormalisasi = preg_replace('/\s+/', ' ', trim($row['nama']));
+
+        // Daftar gelar umum (case insensitive)
+        $gelar = ['dr', 'dr.', 'dokter', 'prof', 'prof.', 'hj', 'hj.', 'haji', 'ir', 'ir.'];
+
+        // Pisahkan nama menjadi array kata
+        $partNama = explode(' ', $namaNormalisasi);
+
+        // Cek jika kata pertama adalah gelar
+        $kataAwal = strtolower($partNama[0]);
+        if (in_array($kataAwal, $gelar)) {
+            // Hapus kata pertama (gelar)
+            array_shift($partNama);
+        }
+
+        $akun = User::create([
+            'username' => implode(' ', $partNama) . substr(Str::uuid(), 0, 4),
+            'password' => PengaturanModel::get('app_default_password'),
+            'role' => 'guru',
+        ]);
+
         return new GuruModel([
             'nip' => $row['nip'],
             'nama' => $row['nama'],
             'email' => $row['email'],
             'no_telp' => $row['no_telp'],
             'jenis_kelamin' => $row['jenis_kelamin'],
+            'id_akun' => $akun->id
         ]);
     }
-
-    // public function onFailure(Failure ...$failures)
-    // {
-    //     foreach ($failures as $failure) {
-    //         $failure->row(); // row that went wrong
-    //         $failure->attribute(); // either heading key (if using heading row concern) or column index
-    //         $failure->errors(); // actual error messages from Laravel validator
-    //         $failure->values(); // the values of the row that has the error
-    //     }
-    // }
 }

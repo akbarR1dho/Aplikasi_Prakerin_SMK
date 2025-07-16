@@ -14,7 +14,6 @@ class HubinModel extends Model
     protected $fillable = [
         'nip',
         'nama',
-        'email',
         'no_telp',
         'jenis_kelamin',
         'id_akun',
@@ -22,6 +21,6 @@ class HubinModel extends Model
 
     public function akun()
     {
-        return $this->hasOne(User::class, 'id', 'id_akun');
+        return $this->belongsTo(User::class, 'id_akun');
     }
 }

@@ -17,15 +17,24 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'username' => 'required',
+            'login' => 'required|string',
             'password' => 'required|min:6',
+        ], [
+            'password.min' => 'Password minimal 6 karakter',
         ]);
 
-        if (auth()->attempt(request()->only('username', 'password'))) {         
+        $tipeLogin = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+
+        $kredensial = [
+            $tipeLogin => $request->login,
+            'password' => $request->password
+        ];
+
+        if (Auth::attempt($kredensial)) {
             return redirect()->route('home')->with('success', 'Login berhasil');
         }
 
-        return redirect()->route('login')->with('error', 'Username atau password salah');
+        return redirect()->route('login')->with('error', 'Username/Email atau password salah')->withInput();
     }
 
     public function logout(Request $request)

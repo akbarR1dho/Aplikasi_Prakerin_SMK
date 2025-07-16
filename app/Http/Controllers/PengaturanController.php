@@ -11,10 +11,10 @@ class PengaturanController extends Controller
     //
     public function index()
     {
-        return view('dashboard.settings');
+        return view('dashboard.pengaturan');
     }
 
-    public function update(Request $request)
+    public function edit(Request $request)
     {
         $request->validate([
             'app_name' => 'required|string|max:255',

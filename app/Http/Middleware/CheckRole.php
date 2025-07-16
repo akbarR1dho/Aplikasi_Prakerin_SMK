@@ -10,64 +10,44 @@ use App\Models\HubinModel;
 use App\Models\JurusanModel;
 use App\Models\KelasModel;
 use App\Models\SiswaModel;
+use Illuminate\Auth\Access\AuthorizationException;
 
 class CheckRole
 {
     public function handle(Request $request, Closure $next, ...$roles)
     {
-        if ($request->session()->has('session_expired')) {
-            return redirect('/login')->with('error', 'Sesi Anda telah habis, silakan login kembali');
-        }
-
         // Ambil user yang sedang login
         $user = Auth::user();
 
+        // Periksa apakah user sudah login
         if (!$user) {
-            return redirect('/login')->with('error', 'Anda harus login terlebih dahulu.');
+            Auth::logout();
+            $request->session()->invalidate(); // Hapus sesi
+            $request->session()->regenerateToken(); // Regenerasi token CSRF
+
+            return redirect()->route('login')->with('error', 'Anda harus login terlebih dahulu.');
         }
 
         // Jika role user tidak ada dalam daftar yang diizinkan, blokir akses
-        if (!in_array($user->role, $roles)) {
+        if (!in_array($user->role, $roles) && !empty($roles)) {
             return abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 
-        // Periksa role user
-        switch ($user->role) {
-            case 'hubin':
-                // Cek apakah user ada di tabel hubin
-                if (!HubinModel::where('id_akun', $user->id)->exists()) {
-                    return redirect('/login')->with('error', 'Akun hubin tidak ditemukan.');
-                }
-                break;
+        if ($user->role === 'guru') {
+            // Cek apakah user ada di tabel guru
+            $guru = GuruModel::with('roles')->where('id_akun', $user->id)->select('id')->first();
 
-            case 'guru':
-                // Cek apakah user ada di tabel guru
-                $guru = GuruModel::where('id_akun', $user->id)->first();
-                if (!$guru) {
-                    return redirect('/')->with('error', 'Akun guru tidak ditemukan.');
-                }
+            $cekRole = [
+                'walas' => $guru->roles->contains('nama', 'guru') || KelasModel::where('id_walas', $guru->id)->exists(),
+                'kaprog' => $guru->roles->contains('nama', 'kaprog') || JurusanModel::where('id_kaprog', $guru->id)->exists(),
+                'pembimbing' => $guru->roles->contains('nama', 'pembimbing')
+            ];
 
-                // Jika role tambahan diperlukan (walas/kaprog/pembimbing)
-                if (in_array('walas', $roles) && !$guru->roles->contains('nama_role', 'walas') && KelasModel::where('walas', $guru->id)->doesntExist()) {
-                    return redirect('/')->with('error', 'Anda tidak memiliki akses sebagai Walas.');
+            foreach ($roles as $role) {
+                if (isset($cekRole[$role]) && !$cekRole[$role]) {
+                    throw new AuthorizationException('Anda tidak memiliki akses sebagai ' . $role);
                 }
-                if (in_array('kaprog', $roles) && !$guru->roles->contains('nama_role', 'kaprog') && JurusanModel::where('kaprog', $guru->id)->doesntExist()) {
-                    return redirect('/')->with('error', 'Anda tidak memiliki akses sebagai Kaprog.');
-                }
-                if (in_array('pembimbing', $roles) && !$guru->roles->contains('nama_role', 'pembimbing')) {
-                    return redirect('/')->with('error', 'Anda tidak memiliki akses sebagai Pembimbing.');
-                }
-                break;
-
-            case 'siswa':
-                // Cek apakah user ada di tabel siswa
-                if (!SiswaModel::where('id_akun', $user->id)->exists()) {
-                    return redirect('/')->with('error', 'Anda tidak memiliki akses sebagai Siswa.');
-                }
-                break;
-
-            default:
-                return redirect('/login')->with('error', 'Role tidak valid.');
+            }
         }
 
         return $next($request);

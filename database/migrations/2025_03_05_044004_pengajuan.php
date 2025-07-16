@@ -15,14 +15,15 @@ return new class extends Migration
         //
         Schema::create('pengajuan', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->string('id_pengajuan', 30)->unique();
             $table->enum('status', ['pending', 'disetujui', 'ditolak']);
             $table->enum('persetujuan_tu', ['setuju', 'tolak']);
             $table->enum('persetujuan_walas', ['setuju', 'tolak']);
             $table->enum('persetujuan_kaprog', ['setuju', 'tolak']);
             $table->string('nama_industri', 100)->index();
             $table->string('kontak_industri', 150);
-            $table->string('alamt_industri', 255);
-            $table->string('id_siswa', 30);
+            $table->string('alamat_industri', 255);
+            $table->string('id_siswa', 20);
             $table->foreign('id_siswa')->references('nis')->on('siswa')->onDelete('cascade');
             $table->timestamps();
         });

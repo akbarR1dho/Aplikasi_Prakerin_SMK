@@ -6,6 +6,7 @@ use App\Models\GuruModel;
 use App\Models\JurusanModel;
 use App\Models\RolesModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -18,7 +19,7 @@ class JurusanController extends Controller
 
             $data = JurusanModel::query()->with(['kaprog' => function ($query) {
                 $query->select('id', 'nama');
-            }])->select('id', 'nama', 'kode_jurusan', 'kaprog')->get();
+            }])->get();
 
             return DataTables::of($data)
                 ->addIndexColumn()
@@ -76,51 +77,41 @@ class JurusanController extends Controller
 
     public function simpan(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $data = $request->validate([
             'nama' => 'required',
-            'kode_jurusan' => 'required|max:3',
-            'kaprog' => 'required',
+            'kode_jurusan' => 'required',
+            'id_kaprog' => 'required|exists:guru,id',
         ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
 
         $roleKaprog = RolesModel::where('nama', 'kaprog')->first();
 
         try {
-            if ($request->id != null) {
-                $jurusan = JurusanModel::find($request->id);
+            DB::transaction(function () use ($request, $roleKaprog, $data) {
+                if ($request->id != null) {
+                    $jurusan = JurusanModel::with('kaprog')->find($request->id);
 
-                if ($jurusan->kaprog !== null) {
-                    $guruLama = GuruModel::find($jurusan->getOriginal('kaprog'));
-                    $guruLama->roles()->detach($roleKaprog->id);
+                    if ($jurusan->id_kaprog !== $request->id_kaprog) {
+                        $jurusan->kaprog->roles()->detach($roleKaprog->id);
+                    }
+
+                    // Update data jurusan
+                    $jurusan->update($data);
+
+                    // Update role kaprog
+                    $newKaprog = GuruModel::find($request->id_kaprog);
+                    $newKaprog->roles()->syncWithoutDetaching($roleKaprog->id);
+                } else {
+                    $jurusan = JurusanModel::create($data);
+
+                    // Tambahkan role kaprog
+                    $newKaprog = GuruModel::find($request->id_kaprog);
+                    $newKaprog->roles()->syncWithoutDetaching($roleKaprog->id);
                 }
+            });
 
-                $jurusan->update([
-                    'nama' => $request->nama,
-                    'kode_jurusan' => $request->kode_jurusan,
-                    'kaprog' => $request->kaprog,
-                ]);
-
-                $guruBaru = GuruModel::find($request->kaprog);
-                $guruBaru->roles()->attach($roleKaprog->id);
-
-                return response()->json(['message' => 'Jurusan berhasil diperbarui']);
-            } else {
-                $jurusan = JurusanModel::create([
-                    'nama' => $request->nama,
-                    'kode_jurusan' => $request->kode_jurusan,
-                    'kaprog' => $request->kaprog,
-                ]);
-
-                $guru = GuruModel::find($request->kaprog);
-                $guru->roles()->attach($roleKaprog->id);
-
-                return response()->json(['message' => 'Jurusan berhasil ditambahkan']);
-            }
+            return response()->json(['message' => $request->id ? 'Jurusan berhasil diperbarui' : 'Jurusan berhasil ditambahkan']);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Terjadi kesalahan saat ingin simpan jurusan'], 500);
+            return response()->json(['message' => $e->getMessage()], 500);
         }
     }
 
@@ -130,7 +121,7 @@ class JurusanController extends Controller
             $jurusan = JurusanModel::find($id);
 
             $roleKaprog = RolesModel::where('nama', 'kaprog')->first();
-            $guru = GuruModel::find($jurusan->kaprog);
+            $guru = GuruModel::find($jurusan->id_kaprog);
             $guru->roles()->detach($roleKaprog->id);
 
             $jurusan->delete();

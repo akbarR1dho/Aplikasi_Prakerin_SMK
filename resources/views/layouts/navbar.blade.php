@@ -36,11 +36,18 @@
                         <div class="dropdown-divider"></div>
                     </li>
 
+                    <li>
+                        <a class="dropdown-item cursor-pointer" href="/profil">
+                            <i class='bx bx-user-hexagon bx-fw'></i>
+                            <span>Profil</span>
+                        </a>
+                    </li>
+
                     @if($user->role == 'hubin')
                     <li>
                         <a class="dropdown-item cursor-pointer" href="/pengaturan">
-                            <i class='bx bx-cog me-2'></i>
-                            <span class="align-middle">Pengaturan</span>
+                            <i class="bx bx-cog bx-fw"></i>
+                            <span>Pengaturan</span>
                         </a>
                     </li>
                     @endif
@@ -50,8 +57,8 @@
                     </li>
                     <li>
                         <button type="button" class="dropdown-item cursor-pointer" id="logoutButton">
-                            <i class="bx bx-power-off me-2"></i>
-                            <span class="align-middle">Keluar</span>
+                            <i class='bx bx-arrow-out-left-square-half bx-fw'></i>
+                            <span>Keluar</span>
                         </button>
                     </li>
                 </ul>

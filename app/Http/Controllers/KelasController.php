@@ -139,22 +139,27 @@ class KelasController extends Controller
         // Query untuk mengambil data guru
         $roleWalas = RolesModel::where('nama', 'walas')->first();
 
-        $tahunMaksimal = now()->year - 1;
-        $baseQuery = GuruModel::where(function ($query) use ($roleWalas, $tahunMaksimal) {
-            // Kondisi A: Tidak punya role walas
-            $query->whereDoesntHave('roles', function ($q) use ($roleWalas) {
-                $q->where('roles.id', $roleWalas->id);
-            })
-                // Kondisi B: Punya role walas, tapi tidak jadi walas dalam 1 tahun terakhir
-                ->orWhere(function ($q) use ($roleWalas, $tahunMaksimal) {
-                    $q->whereHas('roles', function ($q2) use ($roleWalas) {
-                        $q2->where('roles.id', $roleWalas->id);
-                    })
-                        ->whereNotIn('id', function ($subquery) use ($tahunMaksimal) {
-                            $subquery->select('id_walas')
-                                ->from('kelas')
-                                ->groupBy('id_walas')
-                                ->havingRaw('(MAX(angkatan) > ? OR (MAX(angkatan) = ? AND MAX(CAST(tingkat AS INTEGER)) != 12))', [$tahunMaksimal, $tahunMaksimal]);
+        $tahunIni = now()->year;
+        $bulanIni = now()->month;
+
+        $baseQuery = GuruModel::where(function ($query) use ($roleWalas, $tahunIni, $bulanIni) {
+            // Kondisi A: Tidak aktif menjadi walas
+            $query->whereDoesntHave('roles', fn($q) => $q->where('roles.id', $roleWalas->id));
+
+            // Kondisi B: Aktif menjadi walas, tapi terakhir aktif di tahun ini dan sudah lewat Juni atau terakhir aktif di tahun sebelumnya
+            $query->orWhereHas('roles', fn($q) => $q->where('roles.id', $roleWalas->id))
+                ->whereIn('id', function ($subquery) use ($tahunIni, $bulanIni) {
+                    $subquery->select('id_walas')
+                        ->from('kelas')
+                        ->where(function ($q) use ($tahunIni, $bulanIni) {
+                            // Jika sudah lewat Juni, cek tahun ini atau tahun sebelumnya
+                            if ($bulanIni > 6) {
+                                $q->where('angkatan', $tahunIni)
+                                    ->orWhere('angkatan', '<', $tahunIni);
+                            } else {
+                                // Jika belum lewat Juni, hanya cek tahun sebelumnya
+                                $q->where('angkatan', '<', $tahunIni);
+                            }
                         });
                 });
         })
@@ -176,7 +181,7 @@ class KelasController extends Controller
     {
         $request->validate([
             'jurusan' => 'required',
-            'angkatan' => 'required',
+            'angkatan' => 'required|digits:4',
             'tingkat' => 'required|in:11,12',
             'kelompok' => 'required|in:A,B,C',
         ]);
@@ -193,51 +198,47 @@ class KelasController extends Controller
 
             // Ambil angkatan dan tingkat terbaru dari guru yang menjadi walas
             $dataWalas = KelasModel::where('id_walas', $request->walas)
-                ->select('angkatan', 'tingkat')
-                ->orderByDesc('angkatan')
-                ->orderByDesc('tingkat')
+                ->select('angkatan')
+                ->latest('angkatan')
                 ->first();
 
-            $cekAngkatan = false;
-            $cekTingkat = false;
+            if ($dataWalas) {
+                $masihAktif = ($dataWalas->angkatan == now()->year && now()->month < 7) || ($dataWalas->angkatan > now()->year);
 
-            if ($dataWalas !== null) {
-                $cekAngkatan = $dataWalas->angkatan > $request->angkatan - 1;
+                if ($masihAktif) {
+                    return redirect()->route('kelas.form-tambah')->with('error', 'Guru ini masih dalam masa walas. Silakan pilih guru yang lain.')->withInput();
+                }
 
-                $cekTingkat = $request->angkatan - $dataWalas->angkatan == 1 &&
-                    (($dataWalas->tingkat == 12 && $request->tingkat == 11) || $dataWalas->tingkat == 11);
+                $angkatanSama = $dataWalas->angkatan == $request->angkatan;
+
+                if ($angkatanSama) {
+                    return redirect()->route('kelas.form-tambah')->with('error', 'Walas ini sudah dalam angkatan yang sama dengan kelas ini.')->withInput();
+                }
             }
 
-            if ($cekAngkatan) {
-                return redirect()->route('kelas.form-tambah')->with('error', 'Guru ini masih dalam masa walas berdasarkan angkatan yang dipilih. Silakan pilih guru yang lain.')->withInput();
-            }
+            DB::transaction(function () use ($request, $idKelas) {
+                $cekWalas = KelasModel::where('id_walas', $request->walas)->exists();
 
-            if ($cekTingkat) {
-                return redirect()->route('kelas.form-tambah')->with('error', 'Guru ini tidak dapat menjadi walas berdasarkan angkatan dan tingkat yang dipilih.')->withInput();
-            }
+                KelasModel::create([
+                    'id_jurusan' => $request->jurusan,
+                    'kode_jurusan' => $request->kode_jurusan,
+                    'id_kelas' => $idKelas,
+                    'id_walas' => $request->walas,
+                    'angkatan' => $request->angkatan,
+                    'tingkat' => $request->tingkat,
+                    'kelompok' => $request->kelompok,
+                ]);
 
-            $cekWalas = KelasModel::where('id_walas', $request->walas)->exists();
+                $role = RolesModel::firstOrCreate(['nama' => 'walas']);
 
-            KelasModel::create([
-                'id_jurusan' => $request->jurusan,
-                'kode_jurusan' => $request->kode_jurusan,
-                'id_kelas' => $idKelas,
-                'id_walas' => $request->walas,
-                'angkatan' => $request->angkatan,
-                'tingkat' => $request->tingkat,
-                'kelompok' => $request->kelompok,
-            ]);
-
-            $role = RolesModel::where('nama', 'walas')->first();
-
-            if (!$cekWalas) {
-                $guru = GuruModel::find($request->walas);
-                $guru->roles()->attach($role->id);
-            }
+                if (!$cekWalas) {
+                    GuruModel::find($request->walas)->roles()->syncWithoutDetaching($role->id);
+                }
+            });
 
             return redirect()->route('kelas.index')->with('success', 'Data berhasil disimpan');
         } catch (\Exception $e) {
-            return redirect()->route('kelas.form-tambah')->with('error', 'Terjadi kesalahan saat menyimpan data');
+            return redirect()->route('kelas.form-tambah')->with('error', 'Terjadi kesalahan saat menyimpan data')->withInput();
         }
     }
 
@@ -255,7 +256,7 @@ class KelasController extends Controller
     public function gantiWalas(Request $request)
     {
         try {
-            $kelas = KelasModel::findOrFail($request->id);
+            $kelas = KelasModel::with('walas')->findOrFail($request->id);
             $roleWalas = RolesModel::where('nama', 'walas')->first();
 
             if ($kelas->id_walas === $request->walas) {
@@ -264,75 +265,68 @@ class KelasController extends Controller
 
             // Ambil angkatan dan tingkat terbaru dari guru yang menjadi walas
             $dataWalas = KelasModel::where('id_walas', $request->walas)
-                ->select('angkatan', 'tingkat')
-                ->orderByDesc('angkatan')
-                ->orderByDesc('tingkat')
+                ->select('angkatan')
+                ->latest('angkatan')
                 ->first();
 
-            $cekAngkatan = false;
-            $cekTingkat = false;
+            if ($dataWalas) {
+                $masihAktif = ($dataWalas->angkatan == now()->year && now()->month < 7) || ($dataWalas->angkatan > now()->year);
 
-            if ($dataWalas !== null) {
-                $cekAngkatan = $dataWalas->angkatan > $kelas->angkatan - 1;
+                if ($masihAktif) {
+                    return response()->json(['message' => 'Guru ini masih dalam masa walas. Silakan pilih guru yang lain.'], 400);
+                }
 
-                $cekTingkat = (($dataWalas->tingkat == 12 && $kelas->tingkat == 11) ||
-                    ($dataWalas->tingkat == 11 && ($kelas->tingkat == 11 || $kelas->tingkat == 12))) &&
-                    $kelas->angkatan - $dataWalas->angkatan == 1;
+                $angkatanSama = $dataWalas->angkatan == $kelas->angkatan;
+
+                if ($angkatanSama) {
+                    return response()->json(['message' => 'Walas ini sudah dalam angkatan yang sama dengan kelas ini.'], 400);
+                }
             }
 
-            if ($cekAngkatan) {
-                return response()->json(['message' => 'Guru ini masih dalam masa walas berdasarkan angkatan yang dipilih. Silakan pilih guru yang lain.'], 400);
-            }
+            DB::transaction(function () use ($kelas, $request, $roleWalas) {
+                // Hapus role walas dari guru lama jika tidak menjadi walas di kelas lain
+                if ($kelas->walas()->kelas()->where('id', '!=', $kelas->id)->doesntExists()) {
+                    $kelas->walas()->roles()->detach($roleWalas->id);
+                }
 
-            if ($cekTingkat) {
-                return response()->json(['message' => 'Guru ini tidak dapat menjadi walas berdasarkan angkatan dan tingkat yang dipilih. Silakan pilih guru yang lain.'], 400);
-            }
+                // Update walas baru
+                $kelas->update(['id_walas' => $request->walas]);
 
-            $guruLama = $kelas->id_walas;
-            $guruBaru = $request->walas;
+                // Tambahkan role ke guru baru
+                $kelas->load('walas');
+                $kelas->walas()->roles()->syncWithoutDetaching([$roleWalas->id]);
+            });
 
-            // Cek apakah guru lama tidak ada di kelas lain.
-            if ($guruLama && KelasModel::where('id_walas', $guruLama)->where('id', '!=', $request->id)->doesntExist()) {
-                GuruModel::find($guruLama)?->roles()->detach($roleWalas->id);
-            }
-
-            // Cek apakah guru baru tidak ada di kelas lain.
-            if ($guruBaru && KelasModel::where('id_walas', $guruBaru)->doesntExist()) {
-                GuruModel::find($guruBaru)?->roles()->attach($roleWalas->id);
-            }
-
-            $kelas->update([
-                'id_walas' => $request->walas,
-            ]);
-
-            return response()->json(['message' => 'Walas berhasil diganti']);
+            return response()->json(['message' => 'Walas berhasil diganti.']);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Terjadi kesalahan saat mengganti walas'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mengganti walas.'], 500);
         }
     }
 
     public function hapus($id)
     {
         try {
-            $kelas = KelasModel::find($id);
+            $kelas = KelasModel::with('walas')->find($id);
 
             if (!$kelas) {
-                return redirect()->route('kelas.index')->with('error', 'Data tidak ditemukan');
+                return response()->json(['message' => 'Data kelas tidak ditemukan.'], 404);
             }
 
-            // Cek apakah walas tidak ada di kelas lain.
-            $walasTidakAda = KelasModel::where('id_walas', $kelas->id_walas)->where('id', '!=', $kelas->id)->doesntExist();
+            // Cek apakah walas ada di kelas lain.
+            $walasAda = KelasModel::where('id_walas', $kelas->id_walas)->where('id', '!=', $kelas->id)->exists();
 
-            if ($walasTidakAda) {
-                $roleWalas = RolesModel::where('nama', 'walas')->first();
-                GuruModel::find($kelas->id_walas)?->roles()->attach($roleWalas->id);
-            }
+            DB::transaction(function () use ($kelas, $walasAda) {
+                if (!$walasAda) {
+                    $roleWalas = RolesModel::firstOrCreate(['nama' => 'walas']);
+                    $kelas->walas->roles()->detach($roleWalas->id);
+                }
 
-            $kelas->delete();
+                $kelas->delete();
+            });
 
-            return response()->json(['message' => 'Kelas berhasil dihapus']);
+            return response()->json(['message' => 'Kelas berhasil dihapus.']);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Terjadi kesalahan saat menghapus kelas'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat menghapus kelas.'], 500);
         }
     }
 }

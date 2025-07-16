@@ -32,23 +32,25 @@ class AppServiceProvider extends ServiceProvider
             $nama = 'guest';
 
             // Cek apakah user ada di tabel guru, hubin, atau siswa
-            if ($guru = GuruModel::where('id_akun', $user->id)->select('nama', 'jenis_kelamin')->first()) {
+            if ($user->role == 'guru') {
+                $guru = GuruModel::where('id_akun', $user->id)->select('nama', 'jenis_kelamin')->first();
                 $nama = $guru->nama;
                 $jenis_kelamin = $guru->jenis_kelamin;
-            } elseif ($hubin = HubinModel::where('id_akun', $user->id)->select('nama', 'jenis_kelamin')->first()) {
+            } elseif ($user->role == 'hubin') {
+                $hubin = HubinModel::where('id_akun', $user->id)->select('nama', 'jenis_kelamin')->first();
                 $nama = $hubin->nama;
                 $jenis_kelamin = $hubin->jenis_kelamin;
-            } elseif ($siswa = SiswaModel::where('id_akun', $user->id)->select('nama', 'jenis_kelamin')->first()) {
+            } elseif ($user->role == 'siswa') {
+                $siswa = SiswaModel::where('id_akun', $user->id)->select('nama', 'jenis_kelamin')->first();
                 $nama = $siswa->nama;
                 $jenis_kelamin = $siswa->jenis_kelamin;
-            } else {
-                $nama = 'Pengguna Tidak Diketahui';
             }
+
             $view->with('user', $user)->with('nama', $nama)->with('jenis_kelamin', $jenis_kelamin);
         });
 
         Blade::component('flash-message', FlashMessage::class);
-        
+
         $pengaturan = [
             'app_name' => PengaturanModel::get('app_name'),
             'app_icon' => PengaturanModel::get('app_icon'),

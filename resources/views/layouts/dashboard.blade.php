@@ -12,15 +12,17 @@
         name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>Dashboard {{ $pengaturan['app_name'] }}</title>
+    <title>@yield('title', 'Dashboard')</title>
 
     <meta name="description" content="" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset($pengaturan['app_icon']) }}" />
 
-    <!-- Icons. Uncomment required icon fonts -->
-    <link rel="stylesheet" href="{{ asset('dashboard/vendor/fonts/boxicons.css') }}" />
+    <!-- Icons -->
+    <link rel="stylesheet" href="{{ asset('dashboard/vendor/fonts/basic/boxicons.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('dashboard/vendor/fonts/basic/transformations.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('dashboard/vendor/fonts/brands/boxicons-brands.min.css') }}" />
 
     <!-- Core CSS -->
     <link rel="stylesheet" href="{{ asset('dashboard/vendor/css/core.css') }}" class="template-customizer-core-css" />
@@ -37,7 +39,7 @@
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="{{ asset('dashboard/js/config.js') }}"></script>
 
-    @yield('header')
+    @vite(['resources/js/app.js', 'resources/js/libs/select2-custom.js'])
 </head>
 
 <body>

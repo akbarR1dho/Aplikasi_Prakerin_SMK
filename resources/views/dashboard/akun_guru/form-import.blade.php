@@ -1,9 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('header')
-<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.3/viewer.min.css" /> -->
-@vite('resources/js/app.js')
-@endsection
+@section('title', 'Form Import Guru - ' . $pengaturan['app_name'])
 
 @section('content')
 <div class="card">
@@ -81,7 +78,7 @@
                 this.submit();
             }
         });
-        
+
         const img = document.getElementById('imgContohFileImportGuru');
         const viewerjs = new Viewer(img, {
             inline: false, // jadi modal
@@ -92,6 +89,5 @@
             navbar: false,
         });
     });
-
 </script>
 @endsection

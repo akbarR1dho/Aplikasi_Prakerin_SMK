@@ -1,5 +1,7 @@
 @extends('layouts.dashboard')
 
+@section('title', 'Detail Guru - ' . $pengaturan['app_name'])
+
 @section('content')
 <div class="card">
     <div class="card-header">
@@ -8,28 +10,28 @@
     <div class="card-body">
         <table class="table table-bordered mb-3">
             <tr>
-                <th>NIP</th>
-                <td>{{ $guru->nip ? $guru->nip : '-' }}</td>
-            </tr>
-            <tr>
                 <th>Nama</th>
                 <td>{{ $guru->nama }}</td>
-            </tr>
-            <tr>
-                <th>Email</th>
-                <td>{{ $guru->email }}</td>
-            </tr>
-            <tr>
-                <th>No. Telepon</th>
-                <td>{{ $guru->no_telp }}</td>
             </tr>
             <tr>
                 <th>Jenis Kelamin</th>
                 <td>{{ $guru->jenis_kelamin == 'L' ? 'Laki-laki' : 'Perempuan' }}</td>
             </tr>
             <tr>
+                <th>Email</th>
+                <td>{{ $guru->akun->email }}</td>
+            </tr>
+            <tr>
+                <th>No. Telepon</th>
+                <td>{{ $guru->no_telp }}</td>
+            </tr>
+            <tr>
                 <th>Username Akun</th>
                 <td>{{ $guru->akun->username }}</td>
+            </tr>
+            <tr>
+                <th>NIP</th>
+                <td>{{ $guru->nip ? $guru->nip : '-' }}</td>
             </tr>
 
             @if($guru->roles->isNotEmpty())

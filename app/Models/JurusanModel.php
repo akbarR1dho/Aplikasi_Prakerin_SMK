@@ -15,7 +15,7 @@ class JurusanModel extends Model
     protected $fillable = [
         'nama',
         'kode_jurusan',
-        'kaprog',
+        'id_kaprog',
     ];
 
     public function kelas()
@@ -25,6 +25,6 @@ class JurusanModel extends Model
 
     public function kaprog()
     {
-        return $this->hasOne(GuruModel::class, 'id', 'kaprog');
+        return $this->hasOne(GuruModel::class, 'id', 'id_kaprog');
     }
 }

@@ -1,8 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('header')
-@vite('resources/js/app.js')
-@endsection
+@section('title', 'Daftar Jurusan - ' . $pengaturan['app_name'])
 
 @section('content')
 <div class="card">
@@ -26,7 +24,8 @@
             <thead>
                 <tr>
                     <th>Nama</th>
-                    <th>Kaprog</th>
+                    <th>Kode Jurusan</th>
+                    <th>Kepala Program</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -41,7 +40,6 @@
 @endsection
 
 @section('script')
-<script src="{{ asset('js/select2-init-custom.js') }}"></script>
 <script>
     $(document).ready(function() {
 
@@ -72,7 +70,7 @@
             ]
         });
 
-        select2Custom('#guruSelect', '/jurusan/load-kaprog', '#modalForm');
+        select2Custom('#guruSelect', '/jurusan/load-kaprog', 'nama', 'Pilih Kaprog...', '#modalForm');
 
         $('#btnTambah').click(function() {
             $('#modalForm').modal('show');

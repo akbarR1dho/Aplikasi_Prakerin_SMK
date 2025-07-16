@@ -1,5 +1,7 @@
 @extends('layouts.dashboard')
 
+@section('title', 'Pengaturan - ' . $pengaturan['app_name'])
+
 @section('content')
 <div class="card">
     <div class="card-header">
@@ -9,7 +11,7 @@
     </div>
 
     <div class="card-body">
-        <form action="{{ route('pengaturan.update') }}" method="POST" enctype="multipart/form-data" id="formSettings">
+        <form action="{{ route('pengaturan.edit') }}" method="POST" enctype="multipart/form-data" id="formSettings">
             @csrf
 
             <div class="mb-3">

@@ -1,5 +1,7 @@
 @extends('layouts.dashboard')
 
+@section('title', 'Form Tambah Guru - ' . $pengaturan['app_name'])
+
 @section('content')
 <div class="card">
     <div class="card-header">
@@ -14,7 +16,7 @@
             <div class="mb-3">
                 <label class="form-label" for="basic-icon-default-fullname">NIP</label>
                 <div class="input-group input-group-merge">
-                    <span class="input-group-text"><i class='bx bx-id-card'></i></span>
+                    <span class="input-group-text"><i class='bx bx-user-id-card'></i></span>
                     <input
                         type="text"
                         class="form-control"
@@ -38,7 +40,7 @@
             <div class="mb-3">
                 <label class="form-label" for="basic-icon-default-fullname">Email</label>
                 <div class="input-group input-group-merge">
-                    <span class="input-group-text"><i class='bx bx-envelope'></i></span>
+                    <span class="input-group-text"><i class='bx bx-envelope-alt'></i></span>
                     <input
                         type="email"
                         class="form-control"
@@ -64,7 +66,7 @@
             <div class="mb-3">
                 <label class="form-label" for="basic-icon-default-fullname">Jenis Kelamin</label>
                 <div class="input-group input-group-merge">
-                    <span class="input-group-text"><i class='bx bx-body'></i></span>
+                    <span class="input-group-text"><i class='bx bx-man-woman'></i></span>
                     <select name="jenis_kelamin" id="jenis_kelamin" class="form-select">
                         <option selected disabled value>Pilih...</option>
                         <option value="L">Laki-laki</option>

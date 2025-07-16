@@ -1,8 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('header')
-@vite('resources/js/app.js')
-@endsection
+@section('title', 'Form Tambah Kelas - ' . $pengaturan['app_name'])
 
 @section('content')
 <div class="card">
@@ -18,7 +16,7 @@
             <div class="mb-3">
                 <label class="form-label" for="jurusan">Jurusan</label>
                 <div class="d-flex">
-                    <span class="input-group-text"><i class="bx bx-bookmarks"></i></span>
+                    <span class="input-group-text"><i class="bx bx-bookmark-star"></i></span>
                     <div class="d-flex align-items-center border px-1 py-0" style="height: 38.95px; width: 100%;">
                         <select id="jurusan" name="jurusan" class="form-select border-0" style="box-shadow: none;"></select>
                     </div>
@@ -27,7 +25,7 @@
             <div class="mb-3">
                 <label class="form-label" for="walas">Walas</label>
                 <div class="d-flex">
-                    <span class="input-group-text"><i class='bx bxs-user-badge'></i></span>
+                    <span class="input-group-text"><i class='bx bxs-user-check'></i></span>
                     <div class="d-flex align-items-center border px-1 py-0" style="height: 38.95px; width: 100%;">
                         <select name="walas" id="walas" class="form-select border-0" style="box-shadow: none;"></select>
                     </div>
@@ -36,7 +34,7 @@
             <div class="mb-3">
                 <label class="form-label" for="basic-icon-default-fullname">Angkatan</label>
                 <div class="input-group input-group-merge">
-                    <span class="input-group-text"><i class='bx bx-time'></i></span>
+                    <span class="input-group-text"><i class='bx bx-calendar-star'></i></span>
                     <input
                         type="number"
                         class="form-control"
@@ -49,7 +47,7 @@
             <div class="mb-3">
                 <label class="form-label" for="basic-icon-default-fullname">Tingkat</label>
                 <div class="input-group input-group-merge">
-                    <span class="input-group-text"><i class='bx bx-layer'></i></span>
+                    <span class="input-group-text"><i class='bx bx-layers-alt'></i></span>
                     <select name="tingkat" id="tingkat" class="form-select">
                         <option selected disabled value>Pilih...</option>
                         <option value="11" @selected(old('tingkat')=='11' )>11</option>
@@ -60,7 +58,7 @@
             <div class="mb-3">
                 <label class="form-label" for="basic-icon-default-fullname">Kelompok</label>
                 <div class="input-group input-group-merge">
-                    <span class="input-group-text"><i class='bx bxs-group'></i></span>
+                    <span class="input-group-text"><i class='bx bx-tag'></i></span>
                     <select name="kelompok" id="kelompok" class="form-select">
                         <option selected disabled value>Pilih...</option>
                         <option value="A" @selected(old('kelompok')=='A' )>A</option>

@@ -1,5 +1,5 @@
 <div class="modal fade" id="modalForm" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalTitle"></h5>
@@ -36,7 +36,7 @@
                     <div class="d-grid">
                         <label for="kaprog" class="form-label">Pilih Kaprog</label>
 
-                        <select id="guruSelect" class="form-control" required name="kaprog"></select>
+                        <select id="guruSelect" class="form-control" required name="id_kaprog"></select>
                     </div>
                     <input type="hidden" name="id" id="id">
             </div>

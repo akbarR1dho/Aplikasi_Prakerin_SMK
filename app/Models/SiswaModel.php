@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class SiswaModel extends Model
 {
@@ -29,9 +30,26 @@ class SiswaModel extends Model
         'id_akun',
     ];
 
+    // protected static function booted()
+    // {
+    //     static::updating(function ($model) {
+    //         if ($model->isDirty('nama')) {
+    //             $namaAwal = explode(' ', trim($model->nama))[0];
+
+    //             $akun = User::where('id_akun', $model->id_akun)->first();
+
+    //             if ($akun) {
+    //                 $akun->update([
+    //                     'username' => $namaAwal . substr(Str::uuid(), 0, 4),
+    //                 ]);
+    //             }
+    //         }
+    //     });
+    // }
+
     public function akun()
     {
-        return $this->hasOne(User::class, 'id_akun');
+        return $this->belongsTo(User::class, 'id_akun');
     }
 
     public function kelas()

@@ -3,8 +3,9 @@
 window.select2Custom = function (
     selector,
     url,
+    propertyShow = "nama",
+    placeholder,
     dropdownParent = null,
-    placeholder
 ) {
     const localCache = {};
 
@@ -49,7 +50,7 @@ window.select2Custom = function (
                     results: data.data.map((item) => {
                         return {
                             id: item.id,
-                            text: item.nama,
+                            text: item[propertyShow],
                         };
                     }),
                     pagination: {
