@@ -26,7 +26,7 @@
                 </div>
             </div>
             <div class="mb-3">
-                <label class="form-label" for="basic-icon-default-fullname">Nama</label>
+                <label class="form-label" for="basic-icon-default-fullname">Nama <small class="text-muted">Jika Ada Gelar Tambahkan Tanda (.) Setelah Gelar</small></label>
                 <div class="input-group input-group-merge">
                     <span class="input-group-text"><i class='bx bx-user'></i></span>
                     <input
@@ -69,8 +69,8 @@
                     <span class="input-group-text"><i class='bx bx-man-woman'></i></span>
                     <select name="jenis_kelamin" id="jenis_kelamin" class="form-select">
                         <option selected disabled value>Pilih...</option>
-                        <option value="L">Laki-laki</option>
-                        <option value="P">Perempuan</option>
+                        <option value="L" {{ old('jenis_kelamin') == 'L' ? 'selected' : '' }}>Laki-laki</option>
+                        <option value="P" {{ old('jenis_kelamin') == 'P' ? 'selected' : '' }}>Perempuan</option>
                     </select>
                 </div>
             </div>

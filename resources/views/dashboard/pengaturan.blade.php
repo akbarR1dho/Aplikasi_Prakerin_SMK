@@ -13,6 +13,7 @@
     <div class="card-body">
         <form action="{{ route('pengaturan.edit') }}" method="POST" enctype="multipart/form-data" id="formSettings">
             @csrf
+            @method('PUT')
 
             <div class="mb-3">
                 <label for="app_name" class="form-label">Nama Aplikasi</label>
@@ -34,7 +35,7 @@
 
             <div class="d-flex gap-3">
                 <button type="submit" class="btn btn-primary">Simpan</button>
-                <a href="{{ url()->previous() ?? route('home') }}" class="btn btn-secondary">Kembali</a>
+                <a href="{{ route('home') }}" class="btn btn-secondary">Kembali</a>
             </div>
         </form>
     </div>

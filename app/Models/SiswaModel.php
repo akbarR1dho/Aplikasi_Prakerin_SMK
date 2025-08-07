@@ -20,7 +20,6 @@ class SiswaModel extends Model
         'nama',
         'no_telp',
         'jenis_kelamin',
-        'email',
         'nisn',
         'tempat_lahir',
         'tanggal_lahir',
@@ -29,23 +28,6 @@ class SiswaModel extends Model
         'id_kelas',
         'id_akun',
     ];
-
-    // protected static function booted()
-    // {
-    //     static::updating(function ($model) {
-    //         if ($model->isDirty('nama')) {
-    //             $namaAwal = explode(' ', trim($model->nama))[0];
-
-    //             $akun = User::where('id_akun', $model->id_akun)->first();
-
-    //             if ($akun) {
-    //                 $akun->update([
-    //                     'username' => $namaAwal . substr(Str::uuid(), 0, 4),
-    //                 ]);
-    //             }
-    //         }
-    //     });
-    // }
 
     public function akun()
     {

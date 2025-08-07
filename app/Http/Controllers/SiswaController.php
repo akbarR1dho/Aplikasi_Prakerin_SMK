@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\SiswaImport;
 use App\Models\KelasModel;
 use App\Models\PengaturanModel;
 use App\Models\SiswaModel;
@@ -124,7 +125,7 @@ class SiswaController extends Controller
             'tanggal_lahir' => 'required|date',
             'tahun_masuk' => 'required|integer|digits:4',
             'alamat' => 'required|string|max:255',
-            'id_kelas' => 'required|exists:kelas,id',
+            'id_kelas' => 'required|exists:kelas,id_kelas',
         ]);
 
         try {
@@ -147,7 +148,7 @@ class SiswaController extends Controller
 
             return redirect()->route('akun-siswa.index')->with('success', 'Akun dan data siswa berhasil dibuat');
         } catch (\Exception $e) {
-            return redirect()->route('akun-siswa.form-tambah')->with('error', 'Gagal membuat data siswa')->withInput();
+            return redirect()->route('akun-siswa.form-tambah')->with('error', 'Gagal membuat data siswa' . $e)->withInput();
         }
     }
 
@@ -167,23 +168,13 @@ class SiswaController extends Controller
             'tanggal_lahir' => 'required|date',
             'tahun_masuk' => 'required|integer|digits:4',
             'alamat' => 'required|string|max:255',
-            'id_kelas' => 'exists:kelas,id',
+            'id_kelas' => 'exists:kelas,id_kelas',
         ]);
 
         try {
-            DB::transaction(function () use ($request, $data, $siswa) {
-                $akun = $siswa->akun;
-
-                if ($siswa->nama != $request->nama && $akun->username == $request->username) {
-                    // Update username akun siswa
-                    $namaAwal = explode(' ', trim($request->nama))[0];
-                    $akun->update([
-                        'username' => $namaAwal . substr(Str::uuid(), 0, 4)
-                    ]);
-                }
-
+            DB::transaction(function () use ($data, $siswa) {
                 // Memperbarui data dan akun siswa
-                $akun->update($data);
+                $siswa->akun->update($data);
                 $siswa->update($data);
             });
 
@@ -243,6 +234,74 @@ class SiswaController extends Controller
             return response()->json(['message' => 'Password berhasil direset'], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Gagal mereset password'], 500);
+        }
+    }
+
+    public function formImport()
+    {
+        return view('dashboard.akun_siswa.form-import');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:csv,xls,xlsx|max:2048',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $import = new SiswaImport();
+            $import->import($request->file('file'));
+
+            // Hitung error
+            $failures = $import->failures();
+            $jumlahError = collect($failures)
+                ->map(fn($fail) => $fail->row())
+                ->filter()
+                ->unique()
+                ->count();
+
+            $jumlahBaris = $import->totalRows;
+
+            // Jika semua baris error, rollback
+            if ($jumlahError === $jumlahBaris && $jumlahBaris > 0) {
+                throw new \Exception('Semua data gagal divalidasi');
+            }
+
+            // Jika ada error parsial
+            if ($failures->isNotEmpty()) {
+                DB::commit(); // Commit data yang valid
+
+                $messages = $failures->map(function ($failure) {
+                    return "Baris {$failure->row()}: " . implode(', ', $failure->errors());
+                })->toArray();
+
+                return redirect()
+                    ->route('akun-siswa.form-import')
+                    ->with('warning', 'Sebagian data berhasil diimport')
+                    ->with('import_errors', $messages);
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->route('akun-siswa.index')
+                ->with('success', 'Semua data berhasil diimport');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            $errorMessage = 'Import gagal: ' . $e->getMessage();
+
+            // Jika ada error validasi dari Excel
+            if ($e instanceof \Maatwebsite\Excel\Validators\ValidationException) {
+                $errorMessage = 'Validasi data gagal: ' . $e->getMessage();
+            }
+
+            return redirect()
+                ->route('akun-siswa.form-import')
+                ->with('error', $errorMessage)
+                ->withInput();
         }
     }
 }

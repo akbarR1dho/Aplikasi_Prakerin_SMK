@@ -21,66 +21,6 @@ class GuruModel extends Model
         'id_akun',
     ];
 
-    // protected static function booted()
-    // {
-    //     static::creating(function ($model) {
-    //         // Normalisasi nama
-    //         $namaNormalisasi = preg_replace('/\s+/', ' ', trim($model->nama));
-
-    //         // Daftar gelar umum (case insensitive)
-    //         $gelar = ['dr', 'dr.', 'dokter', 'prof', 'prof.', 'hj', 'hj.', 'haji', 'ir', 'ir.'];
-
-    //         // Pisahkan nama menjadi array kata
-    //         $partNama = explode(' ', $namaNormalisasi);
-
-    //         // Cek jika kata pertama adalah gelar
-    //         $kataAwal = strtolower($partNama[0]);
-    //         if (in_array($kataAwal, $gelar)) {
-    //             // Hapus kata pertama (gelar)
-    //             array_shift($partNama);
-    //         }
-
-    //         $akun = User::create([
-    //             'username' => implode(' ', $partNama) . substr(Str::uuid(), 0, 4),
-    //             'password' => PengaturanModel::get('app_default_password'),
-    //             'role' => 'guru',
-    //         ]);
-
-    //         if (!$akun) {
-    //             throw new \Exception('Gagal membuat akun');
-    //         }
-
-    //         $model->id_akun = $akun->id;
-    //     });
-
-    //     static::updating(function ($model) {
-    //         if ($model->isDirty('nama')) {
-    //             // Normalisasi nama
-    //             $namaNormalisasi = preg_replace('/\s+/', ' ', trim($model->nama));
-
-    //             // Daftar gelar umum (case insensitive)
-    //             $gelar = ['dr', 'dr.', 'dokter', 'prof', 'prof.', 'hj', 'hj.', 'haji', 'ir', 'ir.'];
-
-    //             // Pisahkan nama menjadi array kata
-    //             $partNama = explode(' ', $namaNormalisasi);
-
-    //             // Cek jika kata pertama adalah gelar
-    //             $kataAwal = strtolower($partNama[0]);
-    //             if (in_array($kataAwal, $gelar)) {
-    //                 // Hapus kata pertama (gelar)
-    //                 array_shift($partNama);
-    //             }
-    //             $akun = $model->akun;
-
-    //             if ($akun) {
-    //                 $akun->update([
-    //                     'username' => implode(' ', $partNama) . substr(Str::uuid(), 0, 4),
-    //                 ]);
-    //             }
-    //         }
-    //     });
-    // }
-
     public function akun()
     {
         return $this->belongsTo(User::class, 'id_akun');

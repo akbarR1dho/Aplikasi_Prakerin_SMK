@@ -1,29 +1,27 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Form Import Guru - ' . $pengaturan['app_name'])
+@section('title', 'Form Import Siswa - ' . $pengaturan['app_name'])
 
 @section('content')
 <div class="card">
     <div class="card-header">
-        <h2>Import Guru</h2>
+        <h2>Import Siswa</h2>
 
         <div class="my-3">
-            <div class="my-3">
-                <p>Tolong unduh template excel terlebih dahulu sebelum mengimpor data</p>
-                <button
-                    type="button"
-                    id="btnDownloadTemplate"
-                    data-url="{{ route('download-template', ['nama_file' => 'template_guru.xlsx']) }}"
-                    class="btn btn-primary">Unduh Template Excel
-                </button>
-            </div>
+            <p>Tolong unduh template excel terlebih dahulu sebelum mengimpor data</p>
+            <button
+                type="button"
+                id="btnDownloadTemplate"
+                data-url="{{ route('download-template', ['nama_file' => 'template_siswa.xlsx']) }}"
+                class="btn btn-primary">Unduh Template Excel
+            </button>
         </div>
 
         <x-flash-message />
     </div>
 
     <div class="card-body">
-        <form action="{{ route('akun-guru.import') }}" method="POST" enctype="multipart/form-data" id="formImportGuru">
+        <form action="{{ route('akun-siswa.import') }}" method="POST" enctype="multipart/form-data" id="formImportSiswa">
             @csrf
             <div class="mb-3">
                 <label class="form-label" for="basic-icon-default-fullname">File Excel</label>
@@ -39,7 +37,7 @@
             </div>
             <div class="d-flex gap-3">
                 <button type="submit" class="btn btn-primary">Import</button>
-                <a href="{{ route('akun-guru.index') }}" class="btn btn-secondary">Kembali</a>
+                <a href="{{ route('akun-siswa.index') }}" class="btn btn-secondary">Kembali</a>
             </div>
         </form>
     </div>
@@ -56,10 +54,9 @@
 @endsection
 
 @section('script')
-<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.11.3/viewer.min.js"></script> -->
 <script>
     $(document).ready(function() {
-        $('#formImportGuru').submit(function(e) {
+        $('#formImportSiswa').submit(function(e) {
             e.preventDefault();
 
             const isConfirmed = confirm('Yakin ingin mengimpor data ini?');

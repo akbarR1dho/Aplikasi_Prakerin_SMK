@@ -33,7 +33,6 @@
                 <tr>
                     <th>Nama</th>
                     <th>Id Kelas</th>
-                    <th>Email</th>
                     <th class="text-start">NIS</th>
                     <th>Action</th>
                 </tr>
@@ -63,10 +62,6 @@
                     name: 'kelas.id_kelas',
                 },
                 {
-                    data: 'email',
-                    name: 'email'
-                },
-                {
                     data: 'nis',
                     name: 'nis',
                     class: 'text-start',
@@ -85,7 +80,7 @@
             const nis = $(this).data('id');
 
             if (confirm('Yakin ingin menghapus data ini?') == true) {
-                axios.delete('/akun-siswa/' + nis)
+                axios.delete('/akun-siswa/hapus/' + nis)
                     .then(function(response) {
                         alert(response.data.message);
                         $('#data-siswa').DataTable().ajax.reload();

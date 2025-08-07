@@ -29,24 +29,39 @@ class AppServiceProvider extends ServiceProvider
         //
         View::composer(['dashboard.home', 'layouts.dashboard'], function ($view) {
             $user = auth()->user();
+            $jenis_kelamin = 'L';
             $nama = 'guest';
+            $role = 'guest';
 
-            // Cek apakah user ada di tabel guru, hubin, atau siswa
-            if ($user->role == 'guru') {
-                $guru = GuruModel::where('id_akun', $user->id)->select('nama', 'jenis_kelamin')->first();
-                $nama = $guru->nama;
-                $jenis_kelamin = $guru->jenis_kelamin;
-            } elseif ($user->role == 'hubin') {
-                $hubin = HubinModel::where('id_akun', $user->id)->select('nama', 'jenis_kelamin')->first();
-                $nama = $hubin->nama;
-                $jenis_kelamin = $hubin->jenis_kelamin;
-            } elseif ($user->role == 'siswa') {
-                $siswa = SiswaModel::where('id_akun', $user->id)->select('nama', 'jenis_kelamin')->first();
-                $nama = $siswa->nama;
-                $jenis_kelamin = $siswa->jenis_kelamin;
+            // Cek apakah user terautentikasi
+            if ($user) {
+                $modelMap = [
+                    'guru' => GuruModel::class,
+                    'hubin' => HubinModel::class,
+                    'siswa' => SiswaModel::class
+                ];
+
+                $profile = $modelMap[$user->role]::where('id_akun', $user->id)
+                    ->select('nama', 'jenis_kelamin')
+                    ->first();
+
+                $nama = $profile->nama ?? null;
+                $jenis_kelamin = $profile->jenis_kelamin ?? null;
+
+                $view->with([
+                    'nama' => $nama,
+                    'role' => $user->role,
+                    'jenis_kelamin' => $jenis_kelamin,
+                    'user' => $user,
+                ]);
+                return;
             }
 
-            $view->with('user', $user)->with('nama', $nama)->with('jenis_kelamin', $jenis_kelamin);
+            $view->with([
+                'nama' => $nama,
+                'role' => $role,
+                'jenis_kelamin' => $jenis_kelamin,
+            ]);
         });
 
         Blade::component('flash-message', FlashMessage::class);

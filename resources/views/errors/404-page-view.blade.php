@@ -38,7 +38,7 @@
         <div class="misc-wrapper">
             <h2 class="mb-2 mx-2">Page Not Found :(</h2>
             <p class="mb-4 mx-2">Oops! 😖 The requested URL was not found on this server.</p>
-            <a href="{{ url()->previous() ?? route('dashboard') }}" class="btn btn-primary">Go Back</a>
+            <a href="{{ URL::previous() !== URL::current() ? URL::previous() : route('home') }}" class="btn btn-primary">Go Back</a>
             <div class="mt-3">
                 <img
                     src="{{ asset('dashboard/img/illustrations/page-misc-error-light.png') }}"

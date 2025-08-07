@@ -6,18 +6,32 @@ use App\Models\GuruModel;
 use App\Models\JurusanModel;
 use App\Models\KelasModel;
 use App\Models\RolesModel;
+use App\Models\SiswaModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 
 class KelasController extends Controller
 {
+    protected $kelasModel;
+    protected $guruModel;
+    protected $jurusanModel;
+    protected $rolesGuruModel;
+
+    public function __construct()
+    {
+        $this->kelasModel = new KelasModel();
+        $this->guruModel = new GuruModel();
+        $this->jurusanModel = new JurusanModel();
+        $this->rolesGuruModel = new RolesModel();
+    }
+
     //
     public function index(Request $request)
     {
         if ($request->ajax()) {
 
-            $query = KelasModel::query()->with([
+            $query = $this->kelasModel->query()->with([
                 'jurusan' => function ($query) {
                     $query->select('id', 'nama');
                 },
@@ -76,7 +90,7 @@ class KelasController extends Controller
 
     public function detail($id)
     {
-        $data = KelasModel::with('jurusan:id,nama', 'walas:id,nama', 'siswa:nis,nama,email,nisn')->find($id);
+        $data = $this->kelasModel->with('jurusan:id,nama', 'walas:id,nama')->find($id);
 
         if (!$data) {
             return redirect('kelas')->with('error', 'Kelas tidak ditemukan');
@@ -85,11 +99,45 @@ class KelasController extends Controller
         return view('dashboard.kelas.detail', compact('data'));
     }
 
+    public function dataSiswa(Request $request, $id)
+    {
+        if ($request->ajax()) {
+
+            $data = SiswaModel::query()->where('id_kelas', $id)->get();
+
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('action', function ($row) {
+                    return '
+                    <div class="d-none d-lg-block">
+                        <a href="/akun-siswa/detail/' . $row->nis . '" class="btn btn-primary btn-sm">Detail</a>
+                        <a href="/akun-siswa/edit/' . $row->nis . '" class="btn btn-warning btn-sm">Edit</a>
+                        <button type="button" id="btnHapus" class="btn btn-danger btn-sm" data-id="' . $row->nis . '">Hapus</button>
+                        <button type="button" class="btn btn-warning btn-sm btnResetPassword" data-id="' . $row->nis . '">Reset Password</button>
+                    </div>
+                
+                    <div class="d-lg-none dropdown">
+                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                              <i class="bx bx-dots-vertical-rounded"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/akun-siswa/detail/' . $row->nis . '">Detail</a></li>
+                            <li><a class="dropdown-item" href="/akun-siswa/edit/' . $row->nis . '">Edit</a></li>
+                            <li><button class="dropdown-item" id="btnHapus" type="button" data-id="' . $row->nis . '">Hapus</button></li>
+                            <li><button class="dropdown-item btnResetPassword" type="button" data-id="' . $row->nis . '">Reset Password</button></li>
+                        </ul>
+                    </div>';
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+    }
+
     public function formTambah()
     {
         $data = [
-            'jurusan' => JurusanModel::select('id', 'nama')->get(),
-            'walas' => GuruModel::select('id', 'nama')->get(),
+            'jurusan' => $this->jurusanModel->select('id', 'nama')->get(),
+            'walas' => $this->guruModel->select('id', 'nama')->get(),
         ];
 
         return view('dashboard.kelas.form-tambah', compact('data'));
@@ -103,7 +151,7 @@ class KelasController extends Controller
         // Mengambil kata kunci pencarian
         $search = $request->get('q', ''); // Menggunakan 'q' untuk pencarian agar lebih konsisten
 
-        $baseQuery = JurusanModel::select('id', 'nama');
+        $baseQuery = $this->jurusanModel->select('id', 'nama');
 
         if (!empty($search)) {
             // Menambahkan kondisi pencarian jika ada kata kunci
@@ -136,33 +184,7 @@ class KelasController extends Controller
         // Mengambil kata kunci pencarian
         $search = $request->get('q', ''); // Menggunakan 'q' untuk pencarian agar lebih konsisten
 
-        // Query untuk mengambil data guru
-        $roleWalas = RolesModel::where('nama', 'walas')->first();
-
-        $tahunIni = now()->year;
-        $bulanIni = now()->month;
-
-        $baseQuery = GuruModel::where(function ($query) use ($roleWalas, $tahunIni, $bulanIni) {
-            // Kondisi A: Tidak aktif menjadi walas
-            $query->whereDoesntHave('roles', fn($q) => $q->where('roles.id', $roleWalas->id));
-
-            // Kondisi B: Aktif menjadi walas, tapi terakhir aktif di tahun ini dan sudah lewat Juni atau terakhir aktif di tahun sebelumnya
-            $query->orWhereHas('roles', fn($q) => $q->where('roles.id', $roleWalas->id))
-                ->whereIn('id', function ($subquery) use ($tahunIni, $bulanIni) {
-                    $subquery->select('id_walas')
-                        ->from('kelas')
-                        ->where(function ($q) use ($tahunIni, $bulanIni) {
-                            // Jika sudah lewat Juni, cek tahun ini atau tahun sebelumnya
-                            if ($bulanIni > 6) {
-                                $q->where('angkatan', $tahunIni)
-                                    ->orWhere('angkatan', '<', $tahunIni);
-                            } else {
-                                // Jika belum lewat Juni, hanya cek tahun sebelumnya
-                                $q->where('angkatan', '<', $tahunIni);
-                            }
-                        });
-                });
-        })
+        $baseQuery = $this->guruModel
             ->select('id', 'nama')
             ->when($search, fn($q) => $q->where('nama', 'ILIKE', "%{$search}%"))
             ->orderBy('nama');
@@ -187,9 +209,9 @@ class KelasController extends Controller
         ]);
 
         try {
-            $jurusan = JurusanModel::find($request->jurusan);
+            $jurusan = $this->jurusanModel->find($request->jurusan);
             $idKelas = 'KLS' . $jurusan->kode_jurusan . '-' . $request->tingkat . $request->kelompok . $request->angkatan;
-            $cekKelas = KelasModel::where('id_kelas', $idKelas)->exists();
+            $cekKelas = $this->kelasModel->where('id_kelas', $idKelas)->exists();
 
             // Jika sudah ada, kembalikan error
             if ($cekKelas) {
@@ -197,13 +219,13 @@ class KelasController extends Controller
             }
 
             // Ambil angkatan dan tingkat terbaru dari guru yang menjadi walas
-            $dataWalas = KelasModel::where('id_walas', $request->walas)
+            $dataWalas = $this->kelasModel->where('id_walas', $request->walas)
                 ->select('angkatan')
                 ->latest('angkatan')
                 ->first();
 
             if ($dataWalas) {
-                $masihAktif = ($dataWalas->angkatan == now()->year && now()->month < 7) || ($dataWalas->angkatan > now()->year);
+                $masihAktif = ($request->angkatan - $dataWalas->angkatan) < 3;
 
                 if ($masihAktif) {
                     return redirect()->route('kelas.form-tambah')->with('error', 'Guru ini masih dalam masa walas. Silakan pilih guru yang lain.')->withInput();
@@ -217,9 +239,9 @@ class KelasController extends Controller
             }
 
             DB::transaction(function () use ($request, $idKelas) {
-                $cekWalas = KelasModel::where('id_walas', $request->walas)->exists();
+                $cekWalas = $this->kelasModel->where('id_walas', $request->walas)->exists();
 
-                KelasModel::create([
+                $this->kelasModel->create([
                     'id_jurusan' => $request->jurusan,
                     'kode_jurusan' => $request->kode_jurusan,
                     'id_kelas' => $idKelas,
@@ -229,10 +251,10 @@ class KelasController extends Controller
                     'kelompok' => $request->kelompok,
                 ]);
 
-                $role = RolesModel::firstOrCreate(['nama' => 'walas']);
+                $role = $this->rolesGuruModel->firstOrCreate(['nama' => 'walas']);
 
                 if (!$cekWalas) {
-                    GuruModel::find($request->walas)->roles()->syncWithoutDetaching($role->id);
+                    $this->guruModel->find($request->walas)->roles()->syncWithoutDetaching($role->id);
                 }
             });
 
@@ -244,7 +266,7 @@ class KelasController extends Controller
 
     public function dataWalas($id)
     {
-        $data = KelasModel::with('walas:id,nama')->find($id);
+        $data = $this->kelasModel->with('walas:id,nama')->find($id);
 
         if (!$data) {
             return response()->json(['message' => 'Data walas tidak ditemukan'], 404);
@@ -256,15 +278,15 @@ class KelasController extends Controller
     public function gantiWalas(Request $request)
     {
         try {
-            $kelas = KelasModel::with('walas')->findOrFail($request->id);
-            $roleWalas = RolesModel::where('nama', 'walas')->first();
+            $kelas = $this->kelasModel->with('walas')->findOrFail($request->id);
+            $roleWalas = $this->rolesGuruModel->where('nama', 'walas')->first();
 
             if ($kelas->id_walas === $request->walas) {
                 return response()->json(['message' => 'Guru yang dipilih sama. Silakan pilih guru yang lain.'], 400);
             }
 
             // Ambil angkatan dan tingkat terbaru dari guru yang menjadi walas
-            $dataWalas = KelasModel::where('id_walas', $request->walas)
+            $dataWalas = $this->kelasModel->where('id_walas', $request->walas)
                 ->select('angkatan')
                 ->latest('angkatan')
                 ->first();
@@ -306,18 +328,18 @@ class KelasController extends Controller
     public function hapus($id)
     {
         try {
-            $kelas = KelasModel::with('walas')->find($id);
+            $kelas = $this->kelasModel->with('walas')->find($id);
 
             if (!$kelas) {
                 return response()->json(['message' => 'Data kelas tidak ditemukan.'], 404);
             }
 
             // Cek apakah walas ada di kelas lain.
-            $walasAda = KelasModel::where('id_walas', $kelas->id_walas)->where('id', '!=', $kelas->id)->exists();
+            $walasAda = $this->kelasModel->where('id_walas', $kelas->id_walas)->where('id', '!=', $kelas->id)->exists();
 
             DB::transaction(function () use ($kelas, $walasAda) {
                 if (!$walasAda) {
-                    $roleWalas = RolesModel::firstOrCreate(['nama' => 'walas']);
+                    $roleWalas = $this->rolesGuruModel->firstOrCreate(['nama' => 'walas']);
                     $kelas->walas->roles()->detach($roleWalas->id);
                 }
 

@@ -153,7 +153,7 @@
         $(document).on('click', '#btnHapus', function() {
             const id = $(this).data('id');
             if (confirm('Yakin ingin menghapus data ini?') == true) {
-                axios.delete('/kelas/' + id)
+                axios.delete('/kelas/hapus/' + id)
                     .then(function(response) {
                         alert(response.data.message);
                         $('#data-kelas').DataTable().ajax.reload();

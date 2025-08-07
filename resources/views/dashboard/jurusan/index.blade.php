@@ -131,7 +131,6 @@
                     })
                     .catch(error => {
                         alert(error.response.data.message);
-                        console.error('Gagal menambahkan jurusan:', error);
                     });
             }
         });
@@ -139,7 +138,7 @@
         $(document).on('click', '#btnHapus', function() {
             const id = $(this).data('id');
             if (confirm('Yakin ingin menghapus data ini?')) {
-                axios.delete('/jurusan/' + id)
+                axios.delete('/jurusan/hapus/' + id)
                     .then(function(response) {
                         alert(response.data.message);
                         $('#data-guru').DataTable().ajax.reload();

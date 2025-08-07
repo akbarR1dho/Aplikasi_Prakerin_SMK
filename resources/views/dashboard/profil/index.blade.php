@@ -1,17 +1,17 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Profil - ' . $pengaturan['app_name'])
+@section('title', 'Profil Saya - ' . $pengaturan['app_name'])
 
 @section('content')
 <div class="card">
     <div class="card-header">
-        <h2>Profil</h2>
+        <h2>Profil Saya</h2>
 
         <x-flash-message />
     </div>
 
     <div class="card-body">
-        <form action="{{ route('profil.edit') }}" method="POST" id="formEditProfil">
+        <form action="{{ route('profil.edit') }}" method="POST" id="formEditProfil" class="mb-3">
             @csrf
             @method('PUT')
 
@@ -38,6 +38,7 @@
                                 type="text"
                                 class="form-control"
                                 id="nama"
+                                oninput="this.value = this.value.toLowerCase().replace(/[^a-z0-9\_.]/g, '')"
                                 placeholder="Masukkan Username"
                                 name="username" value="{{ old('username') ? old('username') : $user->username }}"
                                 required />
@@ -138,13 +139,19 @@
                 </div>
             </div>
 
-            <div class="d-flex gap-3">
-                <button type="submit" class="btn btn-primary">Simpan</button>
-                <a href="{{ route('home') }}" class="btn btn-secondary">Kembali</a>
+            <div class="d-flex gap-3 flex-column flex-md-row justify-content-between">
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                    <a href="{{ route('home') }}" class="btn btn-secondary">Kembali</a>
+                </div>
+                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalUbahPassword">Ubah Password</button>
             </div>
         </form>
     </div>
 </div>
+
+@include('dashboard.profil.modal-ubah-password')
+
 @endsection
 
 @section('script')
@@ -157,6 +164,40 @@
             if (isConfirmed) {
                 this.submit();
             }
+        });
+
+        $('#formUbahPassword').submit(function(e) {
+            e.preventDefault();
+            const data = $(this).serialize();
+
+            const isConfirmed = confirm('Yakin ingin ubah password?');
+            if (isConfirmed) {
+                axios.put('/profil/ubah-password', data)
+                    .then(response => {
+                        alert(response.data.message);
+                        $('#modalUbahPassword').modal('hide');
+                    })
+                    .catch(error => {
+                        alert(error.response.data.message);
+                    })
+            }
+        });
+
+        $('.togglePassword').click(function() {
+            const target = $(this).data('target');
+            const passwordField = $('#' + target);
+            const icon = $(this).find('i');
+
+            // Toggle password field type
+            const type = passwordField.attr('type') === 'password' ? 'text' : 'password';
+            passwordField.attr('type', type);
+
+            // Toggle icon class
+            icon.toggleClass('bx-eye-slash bx-eye');
+        });
+
+        $('#modalUbahPassword').on('hide.bs.modal', function() {
+            $('#formUbahPassword')[0].reset();
         });
     })
 </script>

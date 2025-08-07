@@ -12,12 +12,23 @@ use Yajra\DataTables\Facades\DataTables;
 
 class JurusanController extends Controller
 {
+    protected $jurusanModel;
+    protected $guruModel;
+    protected $rolesGuruModel;
+
+    public function __construct()
+    {
+        $this->jurusanModel = new JurusanModel();
+        $this->rolesGuruModel = new RolesModel();
+        $this->guruModel = new GuruModel();
+    }
+
     //
     public function index(Request $request)
     {
         if ($request->ajax()) {
 
-            $data = JurusanModel::query()->with(['kaprog' => function ($query) {
+            $data = $this->jurusanModel->query()->with(['kaprog' => function ($query) {
                 $query->select('id', 'nama');
             }])->get();
 
@@ -56,11 +67,9 @@ class JurusanController extends Controller
         $search = $request->get('q', ''); // Menggunakan 'q' untuk pencarian agar lebih konsisten
 
         // Query untuk mengambil data guru
-        $roleKaprog = RolesModel::where('nama', 'kaprog')->first();
+        $roleKaprog = $this->rolesGuruModel->where('nama', 'kaprog')->first();
 
-        $baseQuery = GuruModel::whereDoesntHave('roles', function ($query) use ($roleKaprog) {
-            $query->where('roles.id', $roleKaprog->id);
-        }) // Filter guru yang belum memiliki role kaprog
+        $baseQuery = $this->guruModel->whereDoesntHave('roles', fn($q) => $q->where('roles.id', $roleKaprog->id)) // Filter guru yang belum memiliki role kaprog
             ->select('id', 'nama')
             ->when($search, fn($q) => $q->where('nama', 'ILIKE', "%{$search}%"))
             ->orderBy('nama'); // Mengurutkan berdasarkan nama
@@ -83,12 +92,18 @@ class JurusanController extends Controller
             'id_kaprog' => 'required|exists:guru,id',
         ]);
 
-        $roleKaprog = RolesModel::where('nama', 'kaprog')->first();
+        $roleKaprog = $this->rolesGuruModel->where('nama', 'kaprog')->first();
+
+        if ($this->jurusanModel->where('id_kaprog', $request->id_kaprog)->exists()) {
+            return response()->json([
+                'message' => 'Guru sudah menjadi kaprog untuk jurusan lain.',
+            ], 400);
+        }
 
         try {
             DB::transaction(function () use ($request, $roleKaprog, $data) {
                 if ($request->id != null) {
-                    $jurusan = JurusanModel::with('kaprog')->find($request->id);
+                    $jurusan = $this->jurusanModel->with('kaprog')->find($request->id);
 
                     if ($jurusan->id_kaprog !== $request->id_kaprog) {
                         $jurusan->kaprog->roles()->detach($roleKaprog->id);
@@ -98,30 +113,30 @@ class JurusanController extends Controller
                     $jurusan->update($data);
 
                     // Update role kaprog
-                    $newKaprog = GuruModel::find($request->id_kaprog);
+                    $newKaprog = $this->guruModel->find($request->id_kaprog);
                     $newKaprog->roles()->syncWithoutDetaching($roleKaprog->id);
                 } else {
-                    $jurusan = JurusanModel::create($data);
+                    $jurusan = $this->jurusanModel->create($data);
 
                     // Tambahkan role kaprog
-                    $newKaprog = GuruModel::find($request->id_kaprog);
+                    $newKaprog = $this->guruModel->find($request->id_kaprog);
                     $newKaprog->roles()->syncWithoutDetaching($roleKaprog->id);
                 }
             });
 
             return response()->json(['message' => $request->id ? 'Jurusan berhasil diperbarui' : 'Jurusan berhasil ditambahkan']);
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat menyimpan jurusan'], 400);
         }
     }
 
     public function hapus($id)
     {
         try {
-            $jurusan = JurusanModel::find($id);
+            $jurusan = $this->jurusanModel->find($id);
 
-            $roleKaprog = RolesModel::where('nama', 'kaprog')->first();
-            $guru = GuruModel::find($jurusan->id_kaprog);
+            $roleKaprog = $this->rolesGuruModel->where('nama', 'kaprog')->first();
+            $guru = $this->guruModel->find($jurusan->id_kaprog);
             $guru->roles()->detach($roleKaprog->id);
 
             $jurusan->delete();
@@ -133,7 +148,7 @@ class JurusanController extends Controller
 
     public function getData($id)
     {
-        $data = JurusanModel::with('kaprog:id,nama')->find($id);
+        $data = $this->jurusanModel->with('kaprog:id,nama')->find($id);
 
         if (!$data) {
             return response()->json(['message' => 'Jurusan tidak ditemukan'], 404);

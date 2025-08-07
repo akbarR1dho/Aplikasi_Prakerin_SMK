@@ -6,20 +6,31 @@ use App\Imports\GuruImport;
 use App\Models\GuruModel;
 use App\Models\PengaturanModel;
 use App\Models\User;
+use App\Services\NormalisasiNamaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Yajra\DataTables\Facades\DataTables;
-use Illuminate\Support\Str;
 
 class GuruController extends Controller
 {
+    protected $normalisasiNama;
+    protected $guruModel;
+    protected $akunModel;
+
+    public function __construct()
+    {
+        $this->normalisasiNama = new NormalisasiNamaService();
+        $this->guruModel = new GuruModel();
+        $this->akunModel = new User();
+    }
+
     //
     public function index(Request $request)
     {
         if ($request->ajax()) {
 
-            $data = GuruModel::query()->select('id', 'nama', 'nip')->get();
+            $data = $this->guruModel->query()->select('id', 'nama', 'nip')->get();
 
             return DataTables::of($data)
                 ->addIndexColumn()
@@ -57,7 +68,7 @@ class GuruController extends Controller
 
     public function formEdit($id)
     {
-        $guru = GuruModel::find($id);
+        $guru = $this->guruModel->with('akun')->find($id);
 
         if (!$guru) {
             return redirect()->route('akun-guru.index')->with('error', 'Akun guru tidak ditemukan');
@@ -68,7 +79,7 @@ class GuruController extends Controller
 
     public function detail($id)
     {
-        $guru = GuruModel::with('roles', 'akun')->find($id);
+        $guru = $this->guruModel->with('roles', 'akun')->find($id);
 
         if (!$guru) {
             return redirect()->route('akun-guru.index')->with('error', 'Akun guru tidak ditemukan');
@@ -85,32 +96,23 @@ class GuruController extends Controller
             'email' => 'required|email|unique:akun,email',
             'no_telp' => 'required|string|regex:/^[0-9\+]+$/',
             'jenis_kelamin' => 'required|in:L,P',
-        ], [
-            'nama.required' => 'Nama harus diisi',
-            'nip.required' => 'NIP harus diisi',
-            'nip.unique' => 'NIP sudah terdaftar',
-            'nip.digits' => 'NIP harus terdiri dari 18 angka dan tidak boleh lebih',
-            'email.required' => 'Email harus diisi',
-            'email.email' => 'Format email tidak valid',
-            'email.unique' => 'Email sudah terdaftar',
-            'no_telp.required' => 'Nomor telepon harus diisi',
-            'jenis_kelamin.required' => 'Jenis kelamin harus diisi',
-            'jenis_kelamin.in' => 'Jenis kelamin hanya boleh Laki-laki atau Perempuan',
         ]);
 
+        $generateUsername = $this->normalisasiNama->generateUsername($request->nama);
+
         try {
-            DB::transaction(function () use ($request, $data) {
+
+            DB::transaction(function () use ($request, $data, $generateUsername) {
                 // Membuat akun guru
-                $namaAwal = explode(' ', trim($request->nama))[0];
-                $akun = User::create([
-                    'username' => $namaAwal . substr(Str::uuid(), 0, 4),
+                $akun = $this->akunModel->create([
+                    'username' => $generateUsername,
                     'email' => $request->email,
                     'password' => PengaturanModel::get('app_default_password'),
                     'role' => 'guru',
                 ]);
 
                 // Membuat data guru
-                GuruModel::create([
+                $this->guruModel->create([
                     ...$data,
                     'id_akun' => $akun->id
                 ]);
@@ -125,7 +127,7 @@ class GuruController extends Controller
     public function hapus($id)
     {
         try {
-            $guru = GuruModel::findOrFail($id);
+            $guru = $this->guruModel->findOrFail($id);
             $guru->akun()->delete();
 
             return response()->json(['message' => 'Akun dan data guru berhasil dihapus'], 200);
@@ -138,7 +140,7 @@ class GuruController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $guru = GuruModel::find($id);
+        $guru = $this->guruModel->find($id);
 
         if (!$guru) {
             return redirect()->route('akun-guru.index')->with('error', 'Akun guru tidak ditemukan');
@@ -153,20 +155,13 @@ class GuruController extends Controller
             'jenis_kelamin' => 'required|in:L,P',
         ]);
 
+
         try {
-            $akun = $guru->akun;
-
-            if($guru->nama != $request->nama && $akun->username == $request->username){
-                // Update username akun guru
-                $namaAwal = explode(' ', trim($request->nama))[0];
-                $akun->update([
-                    'username' => $namaAwal . substr(Str::uuid(), 0, 4)
-                ]);
-            }
-
             // Update data dan akun guru
-            $akun->update($data);
-            $guru->update($data);
+            DB::transaction(function () use ($guru, $data) {
+                $guru->akun->update($data);
+                $guru->update($data);
+            });
 
             return redirect()->route('akun-guru.index')->with('success', 'Data guru berhasil diubah');
         } catch (\Exception $e) {
@@ -177,10 +172,10 @@ class GuruController extends Controller
     public function resetPassword($id)
     {
         try {
-            $guru = GuruModel::find($id);
+            $guru = $this->guruModel->find($id);
 
             if (Hash::check(PengaturanModel::get('app_default_password'), $guru->akun->password)) {
-                return response()->json(['message' => 'Password default tidak boleh direset'], 400);
+                return response()->json(['message' => 'Password default tidak bisa direset'], 400);
             }
 
             $guru->akun()->update([
@@ -202,10 +197,6 @@ class GuruController extends Controller
     {
         $request->validate([
             'file' => 'required|mimes:csv,xls,xlsx|max:2048',
-        ], [
-            'file.required' => 'File harus diisi',
-            'file.mimes' => 'Format file harus CSV, XLS, atau XLSX',
-            'file.max' => 'Ukuran file maksimal 2MB',
         ]);
 
         DB::beginTransaction();

@@ -40,6 +40,18 @@
                 </div>
             </div>
             <div class="mb-3">
+                <label class="form-label" for="basic-icon-default-fullname">Username</label>
+                <div class="input-group input-group-merge">
+                    <span class="input-group-text"><i class='bx bx-user'></i></span>
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="username"
+                        placeholder="Masukkan Username"
+                        name="username" required value="{{ $guru->akun->username }}" />
+                </div>
+            </div>
+            <div class="mb-3">
                 <label class="form-label" for="basic-icon-default-fullname">Email</label>
                 <div class="input-group input-group-merge">
                     <span class="input-group-text"><i class='bx bx-envelope-alt'></i></span>
@@ -48,7 +60,7 @@
                         class="form-control"
                         id="email"
                         placeholder="Masukkan Email"
-                        name="email" required value="{{ $guru->email }}" />
+                        name="email" required value="{{ $guru->akun->email }}" />
 
                 </div>
             </div>

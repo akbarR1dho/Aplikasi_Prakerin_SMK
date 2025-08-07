@@ -27,7 +27,7 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <span class="fw-semibold d-block">{{ $nama }}</span>
-                                    <small class="text-muted">{{ $user->role }}</small>
+                                    <small class="text-muted">{{ $role }}</small>
                                 </div>
                             </div>
                         </a>
@@ -43,7 +43,7 @@
                         </a>
                     </li>
 
-                    @if($user->role == 'hubin')
+                    @if($role == 'hubin')
                     <li>
                         <a class="dropdown-item cursor-pointer" href="/pengaturan">
                             <i class="bx bx-cog bx-fw"></i>

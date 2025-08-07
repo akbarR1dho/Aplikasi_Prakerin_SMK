@@ -71,8 +71,8 @@
                                 type="text"
                                 class="form-control"
                                 id="username"
-                                placeholder="Masukkan Email"
-                                name="username" value="{{ old('email') ? old('email') : $siswa->email }}" />
+                                placeholder="Masukkan Username"
+                                name="username" value="{{ old('email') ? old('email') : $siswa->akun->username }}" />
 
                         </div>
                     </div>
@@ -85,7 +85,7 @@
                                 class="form-control"
                                 id="email"
                                 placeholder="Masukkan Email"
-                                name="email" value="{{ old('email') ? old('email') : $siswa->email }}" />
+                                name="email" value="{{ old('email') ? old('email') : $siswa->akun->email }}" />
 
                         </div>
                     </div>
@@ -167,7 +167,7 @@
             </div>
             <div class="d-flex gap-3">
                 <button type="submit" class="btn btn-primary">Simpan</button>
-                <a href="{{ route('akun-siswa.index') }}" class="btn btn-secondary">Kembali</a>
+                <a href="{{ URL::previous() !== URL::current() ? URL::previous() : route('akun-siswa.index') }}" class="btn btn-secondary">Kembali</a>
             </div>
         </form>
     </div>

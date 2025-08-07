@@ -1,21 +1,21 @@
 @if (session()->has('success'))
-<div class="alert alert-success" id="flash-message">
+<div class="alert alert-success flash-message">
     {{ session('success') }}
 </div>
 
 @elseif (session()->has('error'))
-<div class="alert alert-danger" id="flash-message">
+<div class="alert alert-danger flash-message">
     {{ session('error') }}
 </div>
 
 @elseif (session()->has('warning'))
-<div class="alert alert-warning" id="flash-message">
+<div class="alert alert-warning flash-message">
     {{ session('warning') }}
 </div>
 
 
 @elseif (session()->has('errors') && $errors->any())
-<div class="alert alert-danger" id="flash-message">
+<div class="alert alert-danger flash-message">
     <ul class="mb-0">
         @foreach ($errors->all() as $error)
         <li>{{ $error }}</li>
@@ -25,7 +25,7 @@
 @endif
 
 @if (session()->has('import_errors'))
-<div class="alert alert-danger">
+<div class="alert alert-danger flash-message">
     <ul class="mb-0" id="import-error-list">
         @foreach (session('import_errors') as $index => $error)
         <li class="import-error-item {{ $index >= 20 ? 'd-none' : '' }}">{{ $error }}</li>
@@ -59,7 +59,10 @@
 @endif
 
 <script>
-    setTimeout(function() {
-        document.getElementById('flash-message')?.remove();
+    setTimeout(() => {
+        const flashMessage = document.querySelector('.flash-message');
+        if (flashMessage) {
+            flashMessage.remove();
+        }
     }, 5000);
 </script>

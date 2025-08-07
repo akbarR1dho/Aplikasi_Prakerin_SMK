@@ -11,8 +11,9 @@ use App\Http\Controllers\SiswaController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::redirect('/', '/home'); // Mengubah default route ke /home
+Route::redirect('/', '/home'); // Mengubah default route ke /login
 Route::get('/home', [DashboardController::class, 'home'])->name('home')->middleware('role');
+Route::get('/download-template/{nama_file}', [DashboardController::class, 'downloadTemplate'])->name('download-template')->middleware('role');
 
 // Route Autentikasi
 Route::controller(AuthController::class)->group(function () {
@@ -22,13 +23,16 @@ Route::controller(AuthController::class)->group(function () {
 });
 
 // Route Kelola Pengaturan
-Route::get('/pengaturan', [PengaturanController::class, 'index'])->name('pengaturan.index')->middleware('role:hubin');
-Route::post('/pengaturan/update', [PengaturanController::class, 'edit'])->name('pengaturan.edit')->middleware('role:hubin');
+Route::prefix('pengaturan')->controller(PengaturanController::class)->middleware('role:hubin')->group(function () {
+    Route::get('/', 'index')->name('pengaturan.index');
+    Route::put('/edit', 'edit')->name('pengaturan.edit');
+});
 
 // Route Kelola Profil
 Route::prefix('profil')->controller(ProfilController::class)->middleware('role')->group(function () {
     Route::get('/', 'index')->name('profil.index');
     Route::put('/edit', 'edit')->name('profil.edit');
+    Route::put('/ubah-password', 'ubahPassword')->name('profil.ubah-password');
 });
 
 // Route Kelola Akun Guru
@@ -51,7 +55,7 @@ Route::prefix('jurusan')->controller(JurusanController::class)->middleware('role
     Route::get('/load-kaprog', 'loadKaprog')->name('jurusan.load-kaprog');
     Route::get('/get-data/{id}', 'getData')->name('jurusan.get-data');
     Route::post('/simpan', 'simpan')->name('jurusan.simpan');
-    Route::delete('/{id}', 'hapus')->name('jurusan.hapus');
+    Route::delete('/hapus/{id}', 'hapus')->name('jurusan.hapus');
 });
 
 // Route Kelola Kelas
@@ -62,9 +66,10 @@ Route::prefix('kelas')->controller(KelasController::class)->middleware('role:hub
     Route::get('/load-jurusan', 'loadJurusan')->name('kelas.load-jurusan');
     Route::get('/load-walas', 'loadWalas')->name('kelas.load-walas');
     Route::get('/detail/{id}', 'detail')->name('kelas.detail');
+    Route::get('/data-siswa/{id}', 'dataSiswa')->name('kelas.data-siswa');
     Route::get('/data-walas/{id}', 'dataWalas')->name('kelas.data-walas');
     Route::put('/ganti-walas', 'gantiWalas')->name('kelas.ganti-walas');
-    Route::delete('/{id}', 'hapus')->name('kelas.hapus');
+    Route::delete('/hapus/{id}', 'hapus')->name('kelas.hapus');
 });
 
 // Route Kelola Akun Siswa
@@ -79,5 +84,5 @@ Route::prefix('akun-siswa')->controller(SiswaController::class)->middleware('rol
     Route::get('/edit/{nis}', 'formEdit')->name('akun-siswa.form-edit');
     Route::put('/edit/{nis}', 'edit')->name('akun-siswa.edit');
     Route::post('/reset-password/{nis}', 'resetPassword')->name('akun-siswa.reset-password');
-    Route::delete('/{nis}', 'hapus')->name('akun-siswa.hapus');
+    Route::delete('/hapus/{nis}', 'hapus')->name('akun-siswa.hapus');
 });

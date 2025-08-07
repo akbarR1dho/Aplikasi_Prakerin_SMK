@@ -29,20 +29,30 @@
                                 <div class="row gy-3 overflow-hidden">
                                     <div class="col-12">
                                         <div class="form-floating mb-3">
-                                            <input type="text" class="form-control" name="login" id="login" placeholder="Username atau Email" required value="{{ old('login') }}">
+                                            <input type="text"
+                                                class="form-control"
+                                                name="login"
+                                                id="login"
+                                                oninput="if(!this.value.includes('@')) this.value = this.value.toLowerCase().replace(/[^a-z0-9\_.]/g, '')"
+                                                placeholder="Username atau Email"
+                                                required value="{{ old('login') }}">
                                             <label for="login" class="form-label">Username/Email</label>
                                         </div>
                                     </div>
                                     <div class="col-12">
-                                        <div class="form-floating mb-3">
-                                            <input type="password"
-                                                class="form-control"
+                                        <div class="form-floating mb-3 position-relative">
+                                            <input
+                                                type="password"
+                                                class="form-control password-input"
                                                 name="password"
                                                 id="password"
                                                 value="{{ old('password') }}"
                                                 placeholder="Password"
-                                                required />
-                                            <label for="password" class="form-label">Password</label>
+                                                required>
+                                            <label for="password">Password</label>
+                                            <span class="position-absolute top-50 end-0 translate-middle-y pe-3 toggle-password" style="cursor: pointer">
+                                                <i class="bi bi-eye-slash-fill"></i>
+                                            </span>
                                         </div>
                                     </div>
                                     <div class="col-12">
@@ -59,5 +69,20 @@
         </div>
     </section>
 </body>
+
+<script>
+    document.querySelector('.toggle-password').addEventListener('click', function() {
+        const passwordInput = document.getElementById('password');
+        const icon = this.querySelector('i');
+
+        // Toggle password visibility
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+
+        // Toggle icon
+        icon.classList.toggle('bi-eye-slash-fill');
+        icon.classList.toggle('bi-eye-fill');
+    });
+</script>
 
 </html>

@@ -23,7 +23,7 @@
             </tr>
             <tr>
                 <th>Email</th>
-                <td>{{ $siswa->email }}</td>
+                <td>{{ $siswa->akun->email }}</td>
             </tr>
             <tr>
                 <th>No. Telepon</th>
@@ -55,7 +55,7 @@
             </tr>
         </table>
 
-        <a href="{{ route('akun-siswa.index') }}" class="btn btn-secondary">Kembali</a>
+        <a href="{{ URL::previous() !== URL::current() ? URL::previous() : route('akun-siswa.index') }}" class="btn btn-secondary">Kembali</a>
     </div>
 </div>
 @endsection

@@ -2,12 +2,14 @@
 
 namespace App\Imports;
 
-use App\Models\GuruModel;
+use App\Models\KelasModel;
 use App\Models\PengaturanModel;
+use App\Models\SiswaModel;
 use App\Models\User;
 use App\Services\NormalisasiNamaService;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\Importable;
+use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\ToModel;
@@ -15,10 +17,9 @@ use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Events\BeforeImport;
-use Illuminate\Support\Str;
 
 
-class GuruImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithValidation, WithEvents
+class SiswaImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithValidation, WithEvents, SkipsEmptyRows
 {
     /**
      * @param array $row
@@ -31,11 +32,17 @@ class GuruImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithValidat
     public function rules(): array
     {
         return [
-            'nip' => ['required', 'unique:guru,nip'],
-            'nama' => 'required',
-            'email' => ['required', 'email', 'unique:guru,email'],
-            'no_telp' => 'required',
-            'jenis_kelamin' => 'required',
+            'nama' => 'required|string|max:100',
+            'email' => 'required|email|unique:akun,email',
+            'nisn' => 'required|unique:siswa,nisn|digits:10',
+            'nis' => 'required|unique:siswa,nis',
+            'jenis_kelamin' => 'required|in:L,P',
+            'no_telp' => 'required|string|regex:/^[0-9\+]+$/',
+            'tempat_lahir' => 'required|string|max:50',
+            'tanggal_lahir' => 'required',
+            'tahun_masuk' => 'required|integer|digits:4',
+            'alamat' => 'required|string|max:255',
+            'id_kelas' => 'required|exists:kelas,id_kelas',
         ];
     }
 
@@ -61,16 +68,26 @@ class GuruImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithValidat
                 'username' => $generateUsername,
                 'password' => PengaturanModel::get('app_default_password'),
                 'email' => $row['email'],
-                'role' => 'guru',
+                'role' => 'siswa',
             ]);
 
-            return new GuruModel([
-                'nip' => $row['nip'],
+            $kelas = KelasModel::where('id_kelas', $row['id_kelas'])->select('id', 'id_kelas')->first();
+
+            SiswaModel::create([
+                'id_akun' => $akun->id,
                 'nama' => $row['nama'],
-                'no_telp' => $row['no_telp'],
+                'nisn' => $row['nisn'],
+                'nis' => $row['nis'],
                 'jenis_kelamin' => $row['jenis_kelamin'],
-                'id_akun' => $akun->id
+                'no_telp' => $row['no_telp'],
+                'tempat_lahir' => $row['tempat_lahir'],
+                'tanggal_lahir' => $row['tanggal_lahir'],
+                'tahun_masuk' => $row['tahun_masuk'],
+                'alamat' => $row['alamat'],
+                'id_kelas' => $kelas->id,
             ]);
         });
+
+        // dd($row);
     }
 }

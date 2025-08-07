@@ -23,7 +23,7 @@
             </a>
         </li>
 
-        @if($user->role == 'hubin')
+        @if($role == 'hubin')
         <!-- Inventory -->
         <li class="menu-header small text-uppercase">
             <span class="menu-header-text">Inventory</span>
