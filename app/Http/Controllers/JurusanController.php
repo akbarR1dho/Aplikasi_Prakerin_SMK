@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\GuruModel;
 use App\Models\JurusanModel;
-use App\Models\RolesModel;
+use App\Models\RoleModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -14,12 +14,12 @@ class JurusanController extends Controller
 {
     protected $jurusanModel;
     protected $guruModel;
-    protected $rolesGuruModel;
+    protected $roleModel;
 
     public function __construct()
     {
         $this->jurusanModel = new JurusanModel();
-        $this->rolesGuruModel = new RolesModel();
+        $this->roleModel = new RoleModel();
         $this->guruModel = new GuruModel();
     }
 
@@ -67,9 +67,9 @@ class JurusanController extends Controller
         $search = $request->get('q', ''); // Menggunakan 'q' untuk pencarian agar lebih konsisten
 
         // Query untuk mengambil data guru
-        $roleKaprog = $this->rolesGuruModel->where('nama', 'kaprog')->first();
+        $roleKaprog = $this->roleModel->where('nama', 'kaprog')->first();
 
-        $baseQuery = $this->guruModel->whereDoesntHave('roles', fn($q) => $q->where('roles.id', $roleKaprog->id)) // Filter guru yang belum memiliki role kaprog
+        $baseQuery = $this->guruModel->whereDoesntHave('akun.role', fn($q) => $q->where('role.id', $roleKaprog->id)) // Filter guru yang belum memiliki role kaprog
             ->select('id', 'nama')
             ->when($search, fn($q) => $q->where('nama', 'ILIKE', "%{$search}%"))
             ->orderBy('nama'); // Mengurutkan berdasarkan nama
@@ -92,7 +92,7 @@ class JurusanController extends Controller
             'id_kaprog' => 'required|exists:guru,id',
         ]);
 
-        $roleKaprog = $this->rolesGuruModel->where('nama', 'kaprog')->first();
+        $roleKaprog = $this->roleModel->where('nama', 'kaprog')->firstOrFail();
 
         if ($this->jurusanModel->where('id_kaprog', $request->id_kaprog)->exists()) {
             return response()->json([
@@ -105,22 +105,21 @@ class JurusanController extends Controller
                 if ($request->id != null) {
                     $jurusan = $this->jurusanModel->with('kaprog')->find($request->id);
 
-                    if ($jurusan->id_kaprog !== $request->id_kaprog) {
-                        $jurusan->kaprog->roles()->detach($roleKaprog->id);
+                    if (($jurusan->id_kaprog !== $request->id_kaprog) && $jurusan->kaprog->akun->role->contains($roleKaprog->id)) {
+                        $jurusan->kaprog->akun->role()->detach($roleKaprog->id);
                     }
+                    $jurusan->kaprog->akun->role()->attach($roleKaprog->id);
 
                     // Update data jurusan
                     $jurusan->update($data);
-
-                    // Update role kaprog
-                    $newKaprog = $this->guruModel->find($request->id_kaprog);
-                    $newKaprog->roles()->syncWithoutDetaching($roleKaprog->id);
                 } else {
                     $jurusan = $this->jurusanModel->create($data);
 
-                    // Tambahkan role kaprog
-                    $newKaprog = $this->guruModel->find($request->id_kaprog);
-                    $newKaprog->roles()->syncWithoutDetaching($roleKaprog->id);
+                    if (!$jurusan->kaprog?->akun) {
+                        return response()->json(['message' => 'Data kaprog atau akun tidak valid'], 400);
+                    }
+
+                    $jurusan->kaprog->akun->role()->attach($roleKaprog->id);
                 }
             });
 
@@ -135,7 +134,7 @@ class JurusanController extends Controller
         try {
             $jurusan = $this->jurusanModel->find($id);
 
-            $roleKaprog = $this->rolesGuruModel->where('nama', 'kaprog')->first();
+            $roleKaprog = $this->roleModel->where('nama', 'kaprog')->first();
             $guru = $this->guruModel->find($jurusan->id_kaprog);
             $guru->roles()->detach($roleKaprog->id);
 

@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('username', 100)->unique()->nullable(false);
             $table->string('email', 100)->unique()->nullable(false);
             $table->string('password', 255)->nullable(false);
-            $table->enum('role', ['siswa', 'hubin', 'guru']);
             $table->timestamps();
         });
     }

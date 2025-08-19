@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Imports\SiswaImport;
 use App\Models\KelasModel;
 use App\Models\PengaturanModel;
+use App\Models\RoleModel;
 use App\Models\SiswaModel;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Str;
 
@@ -125,7 +125,7 @@ class SiswaController extends Controller
             'tanggal_lahir' => 'required|date',
             'tahun_masuk' => 'required|integer|digits:4',
             'alamat' => 'required|string|max:255',
-            'id_kelas' => 'required|exists:kelas,id_kelas',
+            'id_kelas' => 'required|exists:kelas,id',
         ]);
 
         try {
@@ -136,8 +136,9 @@ class SiswaController extends Controller
                     'username' => $namaAwal . substr(Str::uuid(), 0, 4),
                     'email' => $request->email,
                     'password' => PengaturanModel::get('app_default_password'),
-                    'role' => 'siswa',
                 ]);
+                $role = RoleModel::where('nama', 'siswa')->firstOrFail();
+                $akun->role()->attach($role->id);
 
                 // Membuat data siswa
                 SiswaModel::create([
@@ -168,7 +169,7 @@ class SiswaController extends Controller
             'tanggal_lahir' => 'required|date',
             'tahun_masuk' => 'required|integer|digits:4',
             'alamat' => 'required|string|max:255',
-            'id_kelas' => 'exists:kelas,id_kelas',
+            'id_kelas' => 'required|exists:kelas,id',
         ]);
 
         try {

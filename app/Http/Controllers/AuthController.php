@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\PrioritasRoleService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -47,7 +48,15 @@ class AuthController extends Controller
         $auth = Auth::attempt($kredensial);
 
         if ($auth) {
-            return redirect()->route('home')->with('success', 'Login berhasil');
+            $request->session()->regenerate();
+
+            // Menyimpan role ke dalam session
+            $user = Auth::user()->load('role');
+            $role = $user->role->pluck('nama')->toArray();
+            session([
+                'role' => $role,
+            ]);
+            return redirect()->route('home')->with(['success' => 'Login berhasil', 'welcome' => 'Selamat datang kembali, ']);
         }
 
         return redirect()->route('login')->with('error', 'Username/Email atau password salah')->withInput();

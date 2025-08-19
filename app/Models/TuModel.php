@@ -13,8 +13,8 @@ class TuModel extends Model
     protected $table = 'tu';
 
     protected $fillable = [
+        'nip',
         'nama',
-        'email',
         'no_telp',
         'jenis_kelamin',
         'id_akun',

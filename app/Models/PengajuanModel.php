@@ -13,8 +13,9 @@ class PengajuanModel extends Model
 
     protected $fillable = [
         'status',
+        'id_pengajuan',
         'persetujuan_tu',
-        'persetujuan_kaprg',
+        'persetujuan_kaprog',
         'persetujuan_walas',
         'nama_industri',
         'kontak_industri',

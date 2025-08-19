@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class RoleGuruModel extends Pivot
+class AkunRoleModel extends Pivot
 {
     //
     use HasUuids;

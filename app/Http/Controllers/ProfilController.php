@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\GuruModel;
 use App\Models\HubinModel;
 use App\Models\SiswaModel;
+use App\Models\TuModel;
+use App\Services\PrioritasRoleService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -12,25 +15,38 @@ use Illuminate\Support\Facades\Hash;
 class ProfilController extends Controller
 {
     //
-    public function index()
+    public function index(PrioritasRoleService $prioritasRoleService)
     {
         $user = Auth()->user();
+        $role = $prioritasRoleService->roleUtama(session('role', $user->role->pluck('nama')->toArray()));
 
-        $data = match ($user->role) {
-            'guru' => GuruModel::where('id_akun', $user->id)->firstOrFail(),
-            'siswa' => SiswaModel::where('id_akun', $user->id)->firstOrFail(),
-            'hubin' => HubinModel::where('id_akun', $user->id)->firstOrFail(),
+        // Gunakan relasi yang sudah ada di User model
+        $profileRelation = match (true) {
+            in_array($role, ['walas', 'kaprog']) => 'guru',
+            $role === 'siswa' => 'siswa',
+            $role === 'tu' => 'tu',
+            $role === 'hubin' => 'hubin',
+            default => null
         };
 
-        return view('dashboard.profil.index', [
-            'data' => $data,
-            'user' => $user
-        ]);
+        try {
+            $profileData = $profileRelation
+                ? $user->{$profileRelation}
+                : abort(404, 'Profil tidak ditemukan');
+
+            return view('dashboard.profil.index', [
+                'data' => $profileData,
+                'user' => $user,
+            ]);
+        } catch (ModelNotFoundException $e) {
+            abort(404, 'Data profil tidak ditemukan');
+        }
     }
 
-    public function edit(Request $request)
+    public function edit(Request $request, PrioritasRoleService $prioritasRoleService)
     {
         $user = Auth()->user();
+        $role = $prioritasRoleService->roleUtama(session('role', $user->role->pluck('nama')->toArray()));
 
         $data = $request->validate([
             'nama' => 'required|string',
@@ -43,8 +59,8 @@ class ProfilController extends Controller
             'username.regex' => 'Format username harus berupa huruf kecil, angka, dan simbol (_.).',
         ]);
 
-        $model = match ($user->role) {
-            'guru' => GuruModel::where('id_akun', $user->id)->firstOrFail(),
+        $model = match ($role) {
+            ['walas', 'kaprog'] => GuruModel::where('id_akun', $user->id)->firstOrFail(),
             'siswa' => SiswaModel::where('id_akun', $user->id)->firstOrFail(),
             'hubin' => HubinModel::where('id_akun', $user->id)->firstOrFail(),
         };

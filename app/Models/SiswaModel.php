@@ -38,4 +38,14 @@ class SiswaModel extends Model
     {
         return $this->belongsTo(KelasModel::class, 'id_kelas');
     }
+
+    public function pengajuan()
+    {
+        return $this->hasMany(PengajuanModel::class, 'id_siswa');
+    }
+
+    public function prakerin()
+    {
+        return $this->hasMany(PrakerinModel::class, 'id_siswa');
+    }
 }

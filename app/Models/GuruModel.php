@@ -26,11 +26,6 @@ class GuruModel extends Model
         return $this->belongsTo(User::class, 'id_akun');
     }
 
-    public function roles()
-    {
-        return $this->belongsToMany(RolesModel::class, 'role_guru', 'id_guru', 'id_role')->using(RoleGuruModel::class);
-    }
-
     public function kelas()
     {
         return $this->hasMany(KelasModel::class, 'id_walas');

@@ -16,10 +16,10 @@ return new class extends Migration
         Schema::create('pengajuan', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('id_pengajuan', 30)->unique();
-            $table->enum('status', ['pending', 'disetujui', 'ditolak']);
-            $table->enum('persetujuan_tu', ['setuju', 'tolak']);
-            $table->enum('persetujuan_walas', ['setuju', 'tolak']);
-            $table->enum('persetujuan_kaprog', ['setuju', 'tolak']);
+            $table->enum('status', ['pending', 'disetujui', 'ditolak'])->default('pending');
+            $table->enum('persetujuan_tu', ['pending', 'setuju', 'tolak'])->default('pending');
+            $table->enum('persetujuan_walas', ['pending', 'setuju', 'tolak'])->default('pending');
+            $table->enum('persetujuan_kaprog', ['pending', 'setuju', 'tolak'])->default('pending');
             $table->string('nama_industri', 100)->index();
             $table->string('kontak_industri', 150);
             $table->string('alamat_industri', 255);

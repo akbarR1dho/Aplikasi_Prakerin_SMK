@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         //
-        Schema::create('roles', function (Blueprint $table) {
+        Schema::create('role', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nama', 20)->unique()->nullable(false);
         });
@@ -25,6 +25,6 @@ return new class extends Migration
     public function down(): void
     {
         //
-        Schema::dropIfExists('roles');
+        Schema::dropIfExists('role');
     }
 };

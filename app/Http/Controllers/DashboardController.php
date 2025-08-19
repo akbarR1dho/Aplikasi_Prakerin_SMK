@@ -2,11 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
+
 class DashboardController extends Controller
 {
     //
     public function home()
     {
+        // $user = Auth()->user();
+        // $data_session = DB::table('sessions')->where('user_id', $user->id)->first();
+        // $lastActivity = $data_session->last_activity; // Timestamp terakhir
+        // $lifetime = Config::get('session.lifetime') * 60; // Dalam detik
+        // $expireTime = $lastActivity + $lifetime;
+        // $remaining = $lifetime;
+
         return view('dashboard.home');
     }
 

@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\KelasModel;
 use App\Models\PengaturanModel;
+use App\Models\RoleModel;
 use App\Models\SiswaModel;
 use App\Models\User;
 use App\Services\NormalisasiNamaService;
@@ -68,8 +69,9 @@ class SiswaImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithValida
                 'username' => $generateUsername,
                 'password' => PengaturanModel::get('app_default_password'),
                 'email' => $row['email'],
-                'role' => 'siswa',
             ]);
+            $role = RoleModel::where('nama', 'siswa')->first();
+            $akun->role()->attach($role->id);
 
             $kelas = KelasModel::where('id_kelas', $row['id_kelas'])->select('id', 'id_kelas')->first();
 

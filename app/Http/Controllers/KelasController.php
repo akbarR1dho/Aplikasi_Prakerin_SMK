@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\GuruModel;
 use App\Models\JurusanModel;
 use App\Models\KelasModel;
+use App\Models\RoleModel;
 use App\Models\RolesModel;
 use App\Models\SiswaModel;
 use Illuminate\Http\Request;
@@ -16,14 +17,14 @@ class KelasController extends Controller
     protected $kelasModel;
     protected $guruModel;
     protected $jurusanModel;
-    protected $rolesGuruModel;
+    protected $roleModel;
 
     public function __construct()
     {
         $this->kelasModel = new KelasModel();
         $this->guruModel = new GuruModel();
         $this->jurusanModel = new JurusanModel();
-        $this->rolesGuruModel = new RolesModel();
+        $this->roleModel = new RoleModel();
     }
 
     //
@@ -206,38 +207,39 @@ class KelasController extends Controller
             'angkatan' => 'required|digits:4',
             'tingkat' => 'required|in:11,12',
             'kelompok' => 'required|in:A,B,C',
+            'walas' => 'required',
         ]);
 
+        $jurusan = $this->jurusanModel->find($request->jurusan);
+        $idKelas = 'KLS' . $jurusan->kode_jurusan . '-' . $request->tingkat . $request->kelompok . $request->angkatan;
+        $cekKelas = $this->kelasModel->where('id_kelas', $idKelas)->exists();
+
+        // Jika sudah ada, kembalikan error
+        if ($cekKelas) {
+            return redirect()->route('kelas.form-tambah')->with('error', 'Kelas dengan kombinasi tersebut sudah ada.')->withInput();
+        }
+
+        // Ambil angkatan dan tingkat terbaru dari guru yang menjadi walas
+        $dataWalas = $this->kelasModel->where('id_walas', $request->walas)
+            ->select('angkatan')
+            ->latest('angkatan')
+            ->first();
+
+        if ($dataWalas) {
+            $masihAktif = ($request->angkatan - $dataWalas->angkatan) < 3;
+
+            if ($masihAktif) {
+                return redirect()->route('kelas.form-tambah')->with('error', 'Guru ini masih dalam masa walas. Silakan pilih guru yang lain.')->withInput();
+            }
+
+            $angkatanSama = $dataWalas->angkatan == $request->angkatan;
+
+            if ($angkatanSama) {
+                return redirect()->route('kelas.form-tambah')->with('error', 'Walas ini sudah dalam angkatan yang sama dengan kelas ini.')->withInput();
+            }
+        }
+
         try {
-            $jurusan = $this->jurusanModel->find($request->jurusan);
-            $idKelas = 'KLS' . $jurusan->kode_jurusan . '-' . $request->tingkat . $request->kelompok . $request->angkatan;
-            $cekKelas = $this->kelasModel->where('id_kelas', $idKelas)->exists();
-
-            // Jika sudah ada, kembalikan error
-            if ($cekKelas) {
-                return redirect()->route('kelas.form-tambah')->with('error', 'Kelas dengan kombinasi tersebut sudah ada.')->withInput();
-            }
-
-            // Ambil angkatan dan tingkat terbaru dari guru yang menjadi walas
-            $dataWalas = $this->kelasModel->where('id_walas', $request->walas)
-                ->select('angkatan')
-                ->latest('angkatan')
-                ->first();
-
-            if ($dataWalas) {
-                $masihAktif = ($request->angkatan - $dataWalas->angkatan) < 3;
-
-                if ($masihAktif) {
-                    return redirect()->route('kelas.form-tambah')->with('error', 'Guru ini masih dalam masa walas. Silakan pilih guru yang lain.')->withInput();
-                }
-
-                $angkatanSama = $dataWalas->angkatan == $request->angkatan;
-
-                if ($angkatanSama) {
-                    return redirect()->route('kelas.form-tambah')->with('error', 'Walas ini sudah dalam angkatan yang sama dengan kelas ini.')->withInput();
-                }
-            }
-
             DB::transaction(function () use ($request, $idKelas) {
                 $cekWalas = $this->kelasModel->where('id_walas', $request->walas)->exists();
 
@@ -251,17 +253,29 @@ class KelasController extends Controller
                     'kelompok' => $request->kelompok,
                 ]);
 
-                $role = $this->rolesGuruModel->firstOrCreate(['nama' => 'walas']);
+                $role = $this->roleModel->where('nama', 'walas')->firstOrFail();
 
-                if (!$cekWalas) {
-                    $this->guruModel->find($request->walas)->roles()->syncWithoutDetaching($role->id);
+                if (!$cekWalas && !$this->sudahPunyaRole($request->walas, $role->id)) {
+                    $this->guruModel->find($request->walas)
+                        ->akun
+                        ->role()
+                        ->syncWithoutDetaching($role->id);
                 }
             });
 
             return redirect()->route('kelas.index')->with('success', 'Data berhasil disimpan');
         } catch (\Exception $e) {
-            return redirect()->route('kelas.form-tambah')->with('error', 'Terjadi kesalahan saat menyimpan data')->withInput();
+            return redirect()->route('kelas.form-tambah')->with('error', 'Terjadi kesalahan saat menyimpan data' . $e->getMessage())->withInput();
         }
+    }
+
+    private function sudahPunyaRole($idGuru, $idRole)
+    {
+        return $this->guruModel->find($idGuru)
+            ->akun
+            ->role()
+            ->where('id_role', $idRole)
+            ->exists();
     }
 
     public function dataWalas($id)
@@ -279,7 +293,7 @@ class KelasController extends Controller
     {
         try {
             $kelas = $this->kelasModel->with('walas')->findOrFail($request->id);
-            $roleWalas = $this->rolesGuruModel->where('nama', 'walas')->first();
+            $roleWalas = $this->roleModel->where('nama', 'walas')->firstOrFail();
 
             if ($kelas->id_walas === $request->walas) {
                 return response()->json(['message' => 'Guru yang dipilih sama. Silakan pilih guru yang lain.'], 400);
@@ -307,8 +321,8 @@ class KelasController extends Controller
 
             DB::transaction(function () use ($kelas, $request, $roleWalas) {
                 // Hapus role walas dari guru lama jika tidak menjadi walas di kelas lain
-                if ($kelas->walas()->kelas()->where('id', '!=', $kelas->id)->doesntExists()) {
-                    $kelas->walas()->roles()->detach($roleWalas->id);
+                if ($kelas->walas->kelas()->where('id', '!=', $kelas->id)->doesntExist()) {
+                    $kelas->walas->akun->role()->detach($roleWalas->id);
                 }
 
                 // Update walas baru
@@ -316,12 +330,12 @@ class KelasController extends Controller
 
                 // Tambahkan role ke guru baru
                 $kelas->load('walas');
-                $kelas->walas()->roles()->syncWithoutDetaching([$roleWalas->id]);
+                $kelas->walas->akun->role()->syncWithoutDetaching([$roleWalas->id]);
             });
 
             return response()->json(['message' => 'Walas berhasil diganti.']);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Terjadi kesalahan saat mengganti walas.'], 500);
+            return response()->json(['message' => 'Terjadi kesalahan saat mengganti walas.' . $e->getMessage()], 500);
         }
     }
 
@@ -338,9 +352,9 @@ class KelasController extends Controller
             $walasAda = $this->kelasModel->where('id_walas', $kelas->id_walas)->where('id', '!=', $kelas->id)->exists();
 
             DB::transaction(function () use ($kelas, $walasAda) {
-                if (!$walasAda) {
-                    $roleWalas = $this->rolesGuruModel->firstOrCreate(['nama' => 'walas']);
-                    $kelas->walas->roles()->detach($roleWalas->id);
+                $roleWalas = $this->roleModel->firstOrCreate(['nama' => 'walas']);
+                if (!$walasAda && $this->sudahPunyaRole($kelas->walas->id, $roleWalas->id)) {
+                    $kelas->walas->akun->role()->detach($roleWalas->id);
                 }
 
                 $kelas->delete();

@@ -25,7 +25,6 @@ class User extends Authenticatable
         'username',
         'email',
         'password',
-        'role',
     ];
 
     /**
@@ -62,5 +61,22 @@ class User extends Authenticatable
     public function siswa()
     {
         return $this->hasOne(SiswaModel::class, 'id_akun');
+    }
+
+    public function role()
+    {
+        return $this->belongsToMany(RoleModel::class, 'akun_role', 'id_akun', 'id_role')->using(AkunRoleModel::class);
+    }
+
+    public function tu()
+    {
+        return $this->hasOne(TuModel::class, 'id_akun');
+    }
+
+    public function sudahPunyaRole($idRole)
+    {
+        return $this->role()
+            ->where('id_role', $idRole)
+            ->exists();
     }
 }

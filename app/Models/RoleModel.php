@@ -5,20 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
-class RolesModel extends Model
+class RoleModel extends Model
 {
     //
     use HasUuids;
 
-    protected $table = 'roles';
+    protected $table = 'role';
     public $timestamps = false;
 
     protected $fillable = [
         'nama',
     ];
 
-    public function gurus()
+    public function akun()
     {
-        return $this->belongsToMany(GuruModel::class, 'role_guru', 'id_role', 'id_guru')->using(RoleGuruModel::class);
+        return $this->belongsToMany(User::class, 'akun_role', 'id_role', 'id_akun')->using(AkunRoleModel::class);
     }
 }

@@ -23,12 +23,12 @@
             </a>
         </li>
 
-        @if($role == 'hubin')
         <!-- Inventory -->
         <li class="menu-header small text-uppercase">
             <span class="menu-header-text">Inventory</span>
         </li>
 
+        @if($role == 'hubin')
         <!-- Daftar Akun -->
         <li class="menu-item {{ request()->is('akun-guru', 'akun-siswa', 'akun-industri') ? 'active' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -39,6 +39,11 @@
                 <li class="menu-item {{ request()->is('akun-guru') ? 'active' : '' }}">
                     <a href="/akun-guru" class="menu-link">
                         <div data-i18n="Account">Akun Guru</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->is('akun-tu') ? 'active' : '' }}">
+                    <a href="/akun-tu" class="menu-link">
+                        <div data-i18n="Account">Akun Tu</div>
                     </a>
                 </li>
                 <li class="menu-item {{ request()->is('akun-siswa') ? 'active' : '' }}">
@@ -73,5 +78,13 @@
             </ul>
         </li>
         @endif
+
+        <!-- Pengajuan -->
+        <li class="menu-item {{ request()->is('pengajuan') ? 'active' : '' }}">
+            <a href="/pengajuan" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-ticket"></i>
+                <div data-i18n="Analytics">Pengajuan</div>
+            </a>
+        </li>
     </ul>
 </aside>

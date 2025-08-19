@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Imports\GuruImport;
 use App\Models\GuruModel;
 use App\Models\PengaturanModel;
+use App\Models\RoleModel;
 use App\Models\User;
 use App\Services\NormalisasiNamaService;
 use Illuminate\Http\Request;
@@ -17,12 +18,14 @@ class GuruController extends Controller
     protected $normalisasiNama;
     protected $guruModel;
     protected $akunModel;
+    protected $roleModel;
 
     public function __construct()
     {
         $this->normalisasiNama = new NormalisasiNamaService();
         $this->guruModel = new GuruModel();
         $this->akunModel = new User();
+        $this->roleModel = new RoleModel();
     }
 
     //
@@ -108,8 +111,9 @@ class GuruController extends Controller
                     'username' => $generateUsername,
                     'email' => $request->email,
                     'password' => PengaturanModel::get('app_default_password'),
-                    'role' => 'guru',
                 ]);
+                $role = $this->roleModel->where('nama', 'walas')->firstOrFail();
+                $akun->role()->attach($role->id);
 
                 // Membuat data guru
                 $this->guruModel->create([
@@ -154,7 +158,6 @@ class GuruController extends Controller
             'no_telp' => 'required|string|regex:/^[0-9\+]+$/',
             'jenis_kelamin' => 'required|in:L,P',
         ]);
-
 
         try {
             // Update data dan akun guru

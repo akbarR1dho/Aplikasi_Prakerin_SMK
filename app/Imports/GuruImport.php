@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\GuruModel;
 use App\Models\PengaturanModel;
+use App\Models\RoleModel;
 use App\Models\User;
 use App\Services\NormalisasiNamaService;
 use Illuminate\Support\Facades\DB;
@@ -33,9 +34,9 @@ class GuruImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithValidat
         return [
             'nip' => ['required', 'unique:guru,nip'],
             'nama' => 'required',
-            'email' => ['required', 'email', 'unique:guru,email'],
+            'email' => ['required', 'email', 'unique:akun,email'],
             'no_telp' => 'required',
-            'jenis_kelamin' => 'required',
+            'jenis_kelamin' => 'required|in:L,P',
         ];
     }
 
@@ -61,8 +62,9 @@ class GuruImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithValidat
                 'username' => $generateUsername,
                 'password' => PengaturanModel::get('app_default_password'),
                 'email' => $row['email'],
-                'role' => 'guru',
             ]);
+            $role = RoleModel::where('nama', 'guru')->first();
+            $akun->role()->attach($role->id);
 
             return new GuruModel([
                 'nip' => $row['nip'],

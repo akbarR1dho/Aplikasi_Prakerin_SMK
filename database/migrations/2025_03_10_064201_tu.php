@@ -14,6 +14,7 @@ return new class extends Migration
         //
         Schema::create('tu', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->string('nip', 20)->unique()->nullable(true);
             $table->string('nama', 100)->index();
             $table->string('no_telp', 20);
             $table->enum('jenis_kelamin', ['L', 'P']);
